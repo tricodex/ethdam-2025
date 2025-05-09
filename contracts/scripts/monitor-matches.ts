@@ -95,7 +95,7 @@ async function main() {
   console.log("\n--- Checking OrderMatched Events ---");
   
   const latestBlock = await publicClient.getBlockNumber();
-  const startBlock = latestBlock - BigInt(1000); // Look back 1000 blocks
+  const startBlock = latestBlock - BigInt(100); // Look back 100 blocks (reduced from 1000 due to RPC limitations)
   
   const events = await publicClient.getLogs({
     address: ROFLSWAP_V2_ADDRESS,
@@ -114,7 +114,7 @@ async function main() {
   });
   
   if (events.length > 0) {
-    console.log(`Found ${events.length} OrderMatched events in the last 1000 blocks:`);
+    console.log(`Found ${events.length} OrderMatched events in the last 100 blocks:`);
     events.forEach(event => {
       console.log(`- Match: Buy Order #${event.args.buyOrderId} + Sell Order #${event.args.sellOrderId}`);
       console.log(`  Amount: ${event.args.amount} (${Number(event.args.amount) / 1e18} tokens)`);
@@ -122,7 +122,7 @@ async function main() {
       console.log(`  Block: ${event.blockNumber}`);
     });
   } else {
-    console.log("No OrderMatched events found in the last 1000 blocks.");
+    console.log("No OrderMatched events found in the last 100 blocks.");
   }
   
   // Check all orders in the system

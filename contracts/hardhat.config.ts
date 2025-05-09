@@ -1,6 +1,7 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "./tasks";
 import "@nomicfoundation/hardhat-toolbox-viem";
+import "@nomicfoundation/hardhat-ethers";
 import "@oasisprotocol/sapphire-hardhat";
 import * as dotenv from "dotenv";
 

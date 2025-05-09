@@ -18,8 +18,11 @@ class SettlementEngine:
         with open('abi/ROFLSwap.json', 'r') as f:
             roflswap_abi = json.load(f)
         
+        # Convert contract address to checksum address
+        self.roflswap_address = Web3.to_checksum_address(roflswap_address)
+        
         self.roflswap = self.web3.eth.contract(
-            address=roflswap_address,
+            address=self.roflswap_address,
             abi=roflswap_abi
         )
         
@@ -29,6 +32,7 @@ class SettlementEngine:
         
         # Get the account address from the private key
         self.account = self.web3.eth.account.from_key(private_key).address
+        print(f"Settlement engine initialized with account: {self.account}")
     
     def execute_matches(self, matches):
         """Execute the matched orders by calling the contract"""
@@ -36,45 +40,80 @@ class SettlementEngine:
         
         for match in matches:
             try:
-                print(f"Executing match: Buy order {match['buyOrderId']} with Sell order {match['sellOrderId']}")
+                print(f"\nExecuting match: Buy order {match['buyOrderId']} with Sell order {match['sellOrderId']}")
+                
+                # Convert address and numeric types properly
+                buyer_address = Web3.to_checksum_address(match['buyerAddress'])
+                seller_address = Web3.to_checksum_address(match['sellerAddress'])
+                buy_token = Web3.to_checksum_address(match['buyToken'])
+                sell_token = Web3.to_checksum_address(match['sellToken'])
+                amount = int(match['amount'])
+                price = int(match['price'])
+                
+                print(f"Match details:")
+                print(f"- Buy order ID: {match['buyOrderId']}")
+                print(f"- Sell order ID: {match['sellOrderId']}")
+                print(f"- Buyer address: {buyer_address}")
+                print(f"- Seller address: {seller_address}")
+                print(f"- Amount: {amount}")
+                print(f"- Price: {price}")
+                print(f"- Buy token: {buy_token}")
+                print(f"- Sell token: {sell_token}")
+                
+                # Get current gas price with a small increase
+                gas_price = int(self.web3.eth.gas_price * 1.1)
                 
                 # Prepare the transaction
                 tx = self.roflswap.functions.executeMatch(
-                    match['buyOrderId'],
-                    match['sellOrderId'],
-                    match['buyerAddress'],
-                    match['sellerAddress'],
-                    match['amount'],
-                    match['price'],
-                    match['buyToken'],
-                    match['sellToken']
+                    int(match['buyOrderId']),
+                    int(match['sellOrderId']),
+                    buyer_address,
+                    seller_address,
+                    amount,
+                    price,
+                    buy_token,
+                    sell_token
                 ).build_transaction({
                     'from': self.account,
                     'nonce': self.web3.eth.get_transaction_count(self.account),
-                    'gas': 500000,
-                    'gasPrice': self.web3.eth.gas_price
+                    'gas': 700000,
+                    'gasPrice': gas_price
                 })
                 
+                print(f"Transaction prepared: {tx}")
+                
                 # Sign the transaction
-                # In a real ROFL app, sign_with_tee_key would be used
                 signed_tx = self.web3.eth.account.sign_transaction(tx, self.private_key)
                 
                 # Send the transaction
                 tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+                tx_hash_hex = tx_hash.hex()
+                print(f"Transaction sent: {tx_hash_hex}")
                 
                 # Wait for the transaction to be mined
+                print(f"Waiting for transaction confirmation...")
                 receipt = self.web3.eth.wait_for_transaction_receipt(tx_hash)
+                
+                if receipt.status == 1:
+                    print(f"Transaction successful! Block: {receipt.blockNumber}, Gas used: {receipt.gasUsed}")
+                else:
+                    print(f"Transaction failed! Block: {receipt.blockNumber}, Gas used: {receipt.gasUsed}")
                 
                 results.append({
                     'success': receipt.status == 1,
-                    'txHash': tx_hash.hex(),
-                    'match': match
+                    'txHash': tx_hash_hex,
+                    'match': match,
+                    'receipt': {
+                        'blockNumber': receipt.blockNumber,
+                        'gasUsed': receipt.gasUsed,
+                        'status': receipt.status
+                    }
                 })
-                
-                print(f"Match executed successfully: {tx_hash.hex()}")
                 
             except Exception as e:
                 print(f"Error executing match: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 results.append({
                     'success': False,
                     'error': str(e),

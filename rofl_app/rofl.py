@@ -49,13 +49,48 @@ def get_secure_storage() -> SecureStorage:
 def decrypt(encrypted_data: str) -> Dict[str, Any]:
     """Mock decryption function that would normally be provided by ROFL"""
     # In a real TEE, this would decrypt using TEE-managed keys
-    # For testing, we just parse the "encrypted" data as JSON
+    # For testing and development, we handle different formats
     try:
+        print(f"Decrypting data: {encrypted_data[:100]}...")
+        
+        # Handle hex-encoded data (starting with 0x)
+        if isinstance(encrypted_data, str) and encrypted_data.startswith('0x'):
+            # Remove 0x prefix and convert hex to string
+            hex_data = encrypted_data[2:]
+            try:
+                # Convert hex to bytes and then to string
+                json_str = bytes.fromhex(hex_data).decode('utf-8')
+                print(f"Decoded from hex: {json_str}")
+                return json.loads(json_str)
+            except Exception as e:
+                print(f"Error decoding hex data: {str(e)}")
+        
+        # Handle direct JSON string
         if isinstance(encrypted_data, str):
             return json.loads(encrypted_data)
+        
+        # Handle direct dictionary
+        if isinstance(encrypted_data, dict):
+            return encrypted_data
+            
+        # Fallback: return the data as is
         return encrypted_data
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {str(e)}")
         # For testing, if not JSON, treat it as a simple encoded object
+        return {
+            "orderId": 0,
+            "owner": "0x0000000000000000000000000000000000000000",
+            "isBuy": True,
+            "price": 100,
+            "size": 1,
+            "token": "0x0000000000000000000000000000000000000000"
+        }
+    except Exception as e:
+        print(f"Unexpected error in decrypt: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        # Return a fallback object
         return {
             "orderId": 0,
             "owner": "0x0000000000000000000000000000000000000000",

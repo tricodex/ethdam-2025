@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Main entry point for the OceanSwap ROFL application
+# Main entry point for the ROFLSwap ROFL application
 
 import json
 import time
@@ -36,6 +36,7 @@ storage = OrderStorage()
 def match_and_settle():
     """Main function to match orders and settle trades"""
     print("Starting order matching cycle...")
+    print(f"Time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
     
     try:
         # Load orders from the contract
@@ -46,6 +47,14 @@ def match_and_settle():
         print(f"Found {len(matches)} potential matches")
         
         if matches:
+            print("Match details:")
+            for i, match in enumerate(matches):
+                print(f"Match #{i+1}:")
+                print(f"  Buy Order: #{match['buyOrderId']}, Sell Order: #{match['sellOrderId']}")
+                print(f"  Buyer: {match['buyerAddress']}, Seller: {match['sellerAddress']}")
+                print(f"  Amount: {match['amount']}, Price: {match['price']}")
+                print(f"  Buy Token: {match['buyToken']}, Sell Token: {match['sellToken']}")
+            
             # Execute the matches
             results = settlement_engine.execute_matches(matches)
             
@@ -60,6 +69,8 @@ def match_and_settle():
             
     except Exception as e:
         print(f"Error in match and settle cycle: {str(e)}")
+        import traceback
+        traceback.print_exc()
     
     print("Order matching cycle completed")
 

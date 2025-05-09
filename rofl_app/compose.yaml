@@ -1,9 +1,9 @@
 version: '3'
 
 services:
-  oceanswap-rofl:
+  roflswap-rofl:
     image: python:3.9-slim
-    container_name: oceanswap-rofl
+    container_name: roflswap-rofl
     working_dir: /app
     volumes:
       - ./:/app

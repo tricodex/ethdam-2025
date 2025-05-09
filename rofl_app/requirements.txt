@@ -1,3 +1,7 @@
 web3==6.0.0
 pytest==8.0.0
 python-telegram-bot
+eth-account>=0.8.0
+eth-typing>=3.0.0
+eth-utils>=2.1.0
+hexbytes>=0.3.0
