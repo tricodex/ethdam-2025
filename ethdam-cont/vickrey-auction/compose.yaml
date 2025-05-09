@@ -1,0 +1,10 @@
+services:
+  vickrey-auction:
+    build: .
+    image: "ghcr.io/${GITHUB_USERNAME}/vickrey-auction:latest"
+    platform: linux/amd64
+    environment:
+      - WEB3_PROVIDER_URI=${WEB3_PROVIDER_URI}
+      - SAPPHIRE_CONTRACT_ADDRESS=${SAPPHIRE_CONTRACT_ADDRESS}
+    ports:
+      - "8000:8000"
