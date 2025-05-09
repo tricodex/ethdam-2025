@@ -147,3 +147,6 @@ Desktop.ini
 *.bak
 *.swp
 rofl_app.default.orc
+
+# Project-specific files
+OASIS_COMMANDS.md
