@@ -4,11 +4,11 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-import "./Ownable.sol";
+import "./custom/CustomOwnable.sol";
 import "./PrivateWrapper.sol";
 import "./ERC2771Context.sol";
 
-contract ConfidentialBalanceRegistry is ERC2771Context, AccessControl, Ownable {
+contract ConfidentialBalanceRegistry is ERC2771Context, AccessControl, CustomOwnable {
     bytes32 public constant NEW_TOKEN_COMMITER =
         keccak256("NEW_TOKEN_COMMITER");
     bytes32 public constant COMMITED_TOKEN = keccak256("COMMITED_TOKEN");

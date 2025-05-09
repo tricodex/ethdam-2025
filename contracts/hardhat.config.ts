@@ -1,4 +1,5 @@
-import type { HardhatUserConfig } from "hardhat/config";
+import { HardhatUserConfig } from "hardhat/config";
+import "./tasks";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@oasisprotocol/sapphire-hardhat";
 import * as dotenv from "dotenv";

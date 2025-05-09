@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  oceanswap-rofl:
+    image: python:3.9-slim
+    container_name: oceanswap-rofl
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: >
+      bash -c "pip install -r requirements.txt && 
+               python main.py"
+    environment:
+      - OCEANSWAP_ADDRESS=${OCEANSWAP_ADDRESS}
+      - WEB3_PROVIDER=${WEB3_PROVIDER}
+      - PRIVATE_KEY=${PRIVATE_KEY}
+    restart: unless-stopped

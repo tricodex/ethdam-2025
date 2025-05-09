@@ -81,9 +81,16 @@ async function main() {
   );
   console.log(`\nDeployment information saved to deployment-${hre.network.name}.json`);
   
-  // For Sapphire, we don't need to wait for block explorer indexing as there's no verification
-  // Sapphire has its own explorer but doesn't support verification like Etherscan
-  if (!isSapphireNetwork && hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
+  // For Sapphire, explain where to view the transactions
+  if (isSapphireNetwork) {
+    console.log("\nContract verification is not available on Sapphire networks.");
+    if (hre.network.name === "sapphire-testnet") {
+      console.log("You can view your transactions on the Sapphire Testnet Explorer at https://testnet.explorer.oasis.io/address/" + oceanSwapAddress);
+    } else if (hre.network.name === "sapphire") {
+      console.log("You can view your transactions on the Sapphire Mainnet Explorer at https://explorer.oasis.io/address/" + oceanSwapAddress);
+    }
+  // For non-Sapphire networks, do verification
+  } else if (hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
     console.log("\nWaiting for block explorer to index contracts...");
     await new Promise(resolve => setTimeout(resolve, 30000));
     
@@ -118,9 +125,7 @@ async function main() {
     } catch (error) {
       console.error("Error verifying contracts:", error);
     }
-  } else if (isSapphireNetwork) {
-    console.log("\nContract verification is not available on Sapphire networks.");
-    console.log("You can view your transactions on the Sapphire Explorer at https://explorer.sapphire.oasis.io");
+
   }
   
   console.log("\n🌊 OceanSwap Deployment Completed Successfully! 🌊");

@@ -19,16 +19,36 @@ class TestSettlementEngine(unittest.TestCase):
         # Ensure we're in ROFL mode for testing
         rofl.set_mock_inside_rofl(True)
         
-        # Create a mock ABI file
-        self.mock_abi = [{"name": "executeMatch", "inputs": [], "outputs": []}]
+        # Create a mock Web3 instance
+        self.mock_web3 = MagicMock()
+        self.mock_contract = MagicMock()
+        self.mock_functions = MagicMock()
+        self.mock_account = MagicMock()
+        self.mock_eth = MagicMock()
         
-        # Create the settlement engine with mocked Web3 provider
-        with patch('builtins.open', mock_open(read_data=json.dumps(self.mock_abi))):
+        # Set up the mock chain
+        self.mock_web3.eth = self.mock_eth
+        self.mock_eth.account = MagicMock()
+        self.mock_eth.account.from_key = MagicMock(return_value=self.mock_account)
+        self.mock_account.address = "0xTestAccount"
+        
+        # Setup the contract mock
+        self.mock_web3.eth.contract.return_value = self.mock_contract
+        self.mock_contract.functions = self.mock_functions
+        
+        # Patch Web3 to return our mock
+        with patch('web3.Web3', return_value=self.mock_web3):
+            # Create the settlement engine with our mocked Web3
             self.engine = SettlementEngine(
                 "0xContract",
                 "mock_provider",
                 "0xPrivateKey"
             )
+            
+            # Replace the web3 and contract instance with our mocks
+            self.engine.web3 = self.mock_web3
+            self.engine.oceanswap = self.mock_contract
+            self.engine.account = "0xTestAccount"
         
         # Sample match data
         self.sample_match = {
@@ -42,42 +62,31 @@ class TestSettlementEngine(unittest.TestCase):
             "sellToken": "0xtokenB"
         }
 
-    @patch('web3.Web3')
-    def test_execute_matches_success(self, mock_web3):
+    def test_execute_matches_success(self):
         """Test executing matches successfully"""
-        # Mock the transaction methods
-        mock_contract = MagicMock()
-        mock_functions = MagicMock()
+        # Mock transaction builder
         mock_tx_builder = MagicMock()
-        mock_account = MagicMock()
-        mock_eth = MagicMock()
-        
-        # Setup the call chain
-        mock_web3.return_value.eth = mock_eth
-        mock_eth.account = mock_account
-        mock_account.from_key.return_value.address = "0xTestAccount"
-        mock_contract.functions = mock_functions
-        mock_functions.executeMatch.return_value = mock_tx_builder
+        self.mock_functions.executeMatch.return_value = mock_tx_builder
         
         # Set up transaction execution
         mock_tx = {"from": "0xTestAccount", "nonce": 0, "gas": 500000, "gasPrice": 1000000000}
         mock_tx_builder.build_transaction.return_value = mock_tx
         
+        # Mock transaction count and gas price
+        self.mock_eth.get_transaction_count = MagicMock(return_value=0)
+        self.mock_eth.gas_price = 1000000000
+        
         # Mock signing
         mock_signed_tx = MagicMock()
         mock_signed_tx.rawTransaction = b'0x123456'
-        mock_account.sign_transaction.return_value = mock_signed_tx
+        self.mock_eth.account.sign_transaction = MagicMock(return_value=mock_signed_tx)
         
         # Mock transaction hash and receipt
         mock_tx_hash = b'0xabcdef'
-        mock_eth.send_raw_transaction.return_value = mock_tx_hash
+        self.mock_eth.send_raw_transaction = MagicMock(return_value=mock_tx_hash)
         mock_receipt = MagicMock()
         mock_receipt.status = 1  # Success
-        mock_eth.wait_for_transaction_receipt.return_value = mock_receipt
-        
-        # Replace the engine's contract and methods with our mocks
-        self.engine.oceanswap = mock_contract
-        self.engine.web3 = mock_web3.return_value
+        self.mock_eth.wait_for_transaction_receipt = MagicMock(return_value=mock_receipt)
         
         # Execute the match
         results = self.engine.execute_matches([self.sample_match])
@@ -88,7 +97,7 @@ class TestSettlementEngine(unittest.TestCase):
         self.assertEqual(results[0]["match"], self.sample_match)
         
         # Verify the contract function was called with the right parameters
-        mock_functions.executeMatch.assert_called_once_with(
+        self.mock_functions.executeMatch.assert_called_once_with(
             self.sample_match["buyOrderId"],
             self.sample_match["sellOrderId"],
             self.sample_match["buyerAddress"],
@@ -99,42 +108,31 @@ class TestSettlementEngine(unittest.TestCase):
             self.sample_match["sellToken"]
         )
 
-    @patch('web3.Web3')
-    def test_execute_matches_failure(self, mock_web3):
+    def test_execute_matches_failure(self):
         """Test executing matches with a failure"""
-        # Mock the transaction methods
-        mock_contract = MagicMock()
-        mock_functions = MagicMock()
+        # Mock transaction builder
         mock_tx_builder = MagicMock()
-        mock_account = MagicMock()
-        mock_eth = MagicMock()
-        
-        # Setup the call chain
-        mock_web3.return_value.eth = mock_eth
-        mock_eth.account = mock_account
-        mock_account.from_key.return_value.address = "0xTestAccount"
-        mock_contract.functions = mock_functions
-        mock_functions.executeMatch.return_value = mock_tx_builder
+        self.mock_functions.executeMatch.return_value = mock_tx_builder
         
         # Set up transaction execution
         mock_tx = {"from": "0xTestAccount", "nonce": 0, "gas": 500000, "gasPrice": 1000000000}
         mock_tx_builder.build_transaction.return_value = mock_tx
         
+        # Mock transaction count and gas price
+        self.mock_eth.get_transaction_count = MagicMock(return_value=0)
+        self.mock_eth.gas_price = 1000000000
+        
         # Mock signing
         mock_signed_tx = MagicMock()
         mock_signed_tx.rawTransaction = b'0x123456'
-        mock_account.sign_transaction.return_value = mock_signed_tx
+        self.mock_eth.account.sign_transaction = MagicMock(return_value=mock_signed_tx)
         
         # Simulate a transaction failure
         mock_tx_hash = b'0xabcdef'
-        mock_eth.send_raw_transaction.return_value = mock_tx_hash
+        self.mock_eth.send_raw_transaction = MagicMock(return_value=mock_tx_hash)
         mock_receipt = MagicMock()
         mock_receipt.status = 0  # Failure
-        mock_eth.wait_for_transaction_receipt.return_value = mock_receipt
-        
-        # Replace the engine's contract and methods with our mocks
-        self.engine.oceanswap = mock_contract
-        self.engine.web3 = mock_web3.return_value
+        self.mock_eth.wait_for_transaction_receipt = MagicMock(return_value=mock_receipt)
         
         # Execute the match
         results = self.engine.execute_matches([self.sample_match])
@@ -144,19 +142,10 @@ class TestSettlementEngine(unittest.TestCase):
         self.assertFalse(results[0]["success"])
         self.assertEqual(results[0]["match"], self.sample_match)
 
-    @patch('web3.Web3')
-    def test_execute_matches_exception(self, mock_web3):
+    def test_execute_matches_exception(self):
         """Test executing matches with an exception"""
-        # Mock the transaction methods
-        mock_contract = MagicMock()
-        mock_functions = MagicMock()
-        
         # Setup to raise an exception
-        mock_functions.executeMatch.side_effect = Exception("Test error")
-        mock_contract.functions = mock_functions
-        
-        # Replace the engine's contract with our mock
-        self.engine.oceanswap = mock_contract
+        self.mock_functions.executeMatch.side_effect = Exception("Test error")
         
         # Execute the match
         results = self.engine.execute_matches([self.sample_match])
@@ -167,47 +156,36 @@ class TestSettlementEngine(unittest.TestCase):
         self.assertEqual(results[0]["error"], "Test error")
         self.assertEqual(results[0]["match"], self.sample_match)
 
-    @patch('web3.Web3')
-    def test_execute_multiple_matches(self, mock_web3):
+    def test_execute_multiple_matches(self):
         """Test executing multiple matches"""
         # Create a second match
         sample_match2 = self.sample_match.copy()
         sample_match2["buyOrderId"] = 3
         sample_match2["sellOrderId"] = 4
         
-        # Mock the transaction methods for success
-        mock_contract = MagicMock()
-        mock_functions = MagicMock()
+        # Mock transaction builder
         mock_tx_builder = MagicMock()
-        mock_account = MagicMock()
-        mock_eth = MagicMock()
-        
-        # Setup the call chain
-        mock_web3.return_value.eth = mock_eth
-        mock_eth.account = mock_account
-        mock_account.from_key.return_value.address = "0xTestAccount"
-        mock_contract.functions = mock_functions
-        mock_functions.executeMatch.return_value = mock_tx_builder
+        self.mock_functions.executeMatch.return_value = mock_tx_builder
         
         # Set up transaction execution
         mock_tx = {"from": "0xTestAccount", "nonce": 0, "gas": 500000, "gasPrice": 1000000000}
         mock_tx_builder.build_transaction.return_value = mock_tx
         
+        # Mock transaction count and gas price
+        self.mock_eth.get_transaction_count = MagicMock(return_value=0)
+        self.mock_eth.gas_price = 1000000000
+        
         # Mock signing
         mock_signed_tx = MagicMock()
         mock_signed_tx.rawTransaction = b'0x123456'
-        mock_account.sign_transaction.return_value = mock_signed_tx
+        self.mock_eth.account.sign_transaction = MagicMock(return_value=mock_signed_tx)
         
         # Mock transaction hash and receipt
         mock_tx_hash = b'0xabcdef'
-        mock_eth.send_raw_transaction.return_value = mock_tx_hash
+        self.mock_eth.send_raw_transaction = MagicMock(return_value=mock_tx_hash)
         mock_receipt = MagicMock()
         mock_receipt.status = 1  # Success
-        mock_eth.wait_for_transaction_receipt.return_value = mock_receipt
-        
-        # Replace the engine's contract and methods with our mocks
-        self.engine.oceanswap = mock_contract
-        self.engine.web3 = mock_web3.return_value
+        self.mock_eth.wait_for_transaction_receipt = MagicMock(return_value=mock_receipt)
         
         # Execute both matches
         results = self.engine.execute_matches([self.sample_match, sample_match2])
@@ -218,7 +196,7 @@ class TestSettlementEngine(unittest.TestCase):
         self.assertTrue(results[1]["success"])
         
         # Verify executeMatch was called twice
-        self.assertEqual(mock_functions.executeMatch.call_count, 2)
+        self.assertEqual(self.mock_functions.executeMatch.call_count, 2)
 
 if __name__ == "__main__":
     unittest.main() 

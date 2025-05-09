@@ -8,6 +8,7 @@ This is the ROFL (Runtime Off-chain Logic) component of the OceanSwap decentrali
 2. **settlement.py**: Executes settlements on the OceanSwap contract
 3. **storage.py**: Manages secure storage of orders and matches
 4. **main.py**: Entry point for the ROFL application
+5. **rofl.py**: Mock implementation of ROFL framework for testing and local development
 
 ## How It Works
 
@@ -38,6 +39,31 @@ This is the ROFL (Runtime Off-chain Logic) component of the OceanSwap decentrali
    ```
    python main.py
    ```
+
+## Testing
+
+The application includes comprehensive tests for all components. To run the tests:
+
+1. Install the development dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+
+2. Run the tests:
+   ```
+   python run_tests.py
+   ```
+
+This will execute both unittest and pytest test suites. The test runner automatically:
+- Creates mock ABI files for testing
+- Sets up the necessary environment variables
+- Verifies all components function correctly in isolation and together
+
+You can also run individual test modules:
+```
+python -m unittest tests/test_rofl.py
+python -m pytest tests/test_matching_engine.py
+```
 
 ## Security
 

@@ -5,6 +5,7 @@ import os
 import sys
 import unittest
 import pytest
+import json
 
 print("Running OceanSwap ROFL App tests...")
 
@@ -17,14 +18,82 @@ os.environ['PRIVATE_KEY'] = '0xTestKey'
 # Create abi directory if it doesn't exist
 os.makedirs('abi', exist_ok=True)
 
-# Create dummy ABI files if they don't exist
-if not os.path.exists('abi/OceanSwap.json'):
-    with open('abi/OceanSwap.json', 'w') as f:
-        f.write('[]')
+# Create mock ABI files with proper format for Web3
+oceanswap_abi = [
+    {
+        "type": "function",
+        "name": "orderCounter",
+        "inputs": [],
+        "outputs": [{"type": "uint256", "name": ""}],
+        "stateMutability": "view",
+        "constant": True
+    },
+    {
+        "type": "function",
+        "name": "filledOrders",
+        "inputs": [{"type": "uint256", "name": "orderId"}],
+        "outputs": [{"type": "bool", "name": ""}],
+        "stateMutability": "view",
+        "constant": True
+    },
+    {
+        "type": "function",
+        "name": "getEncryptedOrder",
+        "inputs": [{"type": "uint256", "name": "orderId"}],
+        "outputs": [{"type": "string", "name": ""}],
+        "stateMutability": "view",
+        "constant": True
+    },
+    {
+        "type": "function",
+        "name": "executeMatch",
+        "inputs": [
+            {"type": "uint256", "name": "buyOrderId"},
+            {"type": "uint256", "name": "sellOrderId"},
+            {"type": "address", "name": "buyer"},
+            {"type": "address", "name": "seller"},
+            {"type": "uint256", "name": "amount"},
+            {"type": "uint256", "name": "price"},
+            {"type": "address", "name": "buyToken"},
+            {"type": "address", "name": "sellToken"}
+        ],
+        "outputs": [{"type": "bool", "name": ""}],
+        "stateMutability": "nonpayable",
+        "constant": False
+    }
+]
 
-if not os.path.exists('abi/PrivateERC20.json'):
-    with open('abi/PrivateERC20.json', 'w') as f:
-        f.write('[]')
+erc20_abi = [
+    {
+        "type": "function",
+        "name": "balanceOf",
+        "inputs": [{"type": "address", "name": "account"}],
+        "outputs": [{"type": "uint256", "name": ""}],
+        "stateMutability": "view",
+        "constant": True
+    },
+    {
+        "type": "function",
+        "name": "transfer",
+        "inputs": [
+            {"type": "address", "name": "recipient"},
+            {"type": "uint256", "name": "amount"}
+        ],
+        "outputs": [{"type": "bool", "name": ""}],
+        "stateMutability": "nonpayable",
+        "constant": False
+    }
+]
+
+# Write ABIs to files
+with open('abi/OceanSwap.json', 'w') as f:
+    json.dump(oceanswap_abi, f, indent=2)
+
+with open('abi/PrivateERC20.json', 'w') as f:
+    json.dump(erc20_abi, f, indent=2)
+
+# Patch the tests to use proper mocking of the Web3 contract initialization
+# This will be done within the test files
 
 # Run tests with unittest
 print("\n=== Running unittest tests ===")

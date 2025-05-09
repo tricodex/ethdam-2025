@@ -3,10 +3,10 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./confidentialERC20/PrivateWrapper.sol";
 import "./confidentialERC20/PrivateERC20.sol";
 import "./confidentialERC20/BalanceRegistry.sol";
-import "./confidentialERC20/Ownable.sol";
 
 /**
  * @title OceanSwap
@@ -59,7 +59,7 @@ contract OceanSwap is Ownable {
         address _waterToken,
         address _fireToken,
         address _multicall
-    ) {
+    ) Ownable(msg.sender) {
         waterToken = _waterToken;
         fireToken = _fireToken;
         
