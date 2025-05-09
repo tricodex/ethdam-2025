@@ -1,3 +1,6 @@
 [submodule "ethdam-next"]
     path = ethdam-next
     url = https://github.com/tricodex/ethdam-next.git
+[submodule "demo-starter-fork"]
+	path = demo-starter-fork
+	url = ./demo-starter-fork
