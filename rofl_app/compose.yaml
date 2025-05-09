@@ -11,7 +11,7 @@ services:
       bash -c "pip install -r requirements.txt && 
                python main.py"
     environment:
-      - OCEANSWAP_ADDRESS=${OCEANSWAP_ADDRESS}
+      - ROFLSWAP_ADDRESS=${ROFLSWAP_ADDRESS}
       - WEB3_PROVIDER=${WEB3_PROVIDER}
       - PRIVATE_KEY=${PRIVATE_KEY}
     restart: unless-stopped

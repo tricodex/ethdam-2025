@@ -13,24 +13,24 @@ from rofl import ensure_inside_rofl, register_periodic_task
 ensure_inside_rofl()
 
 # Configuration
-OCEANSWAP_ADDRESS = os.environ.get('OCEANSWAP_ADDRESS')
+ROFLSWAP_ADDRESS = os.environ.get('ROFLSWAP_ADDRESS')
 WEB3_PROVIDER = os.environ.get('WEB3_PROVIDER', 'https://testnet.sapphire.oasis.io')
 PRIVATE_KEY = os.environ.get('PRIVATE_KEY')  # In a real ROFL app, this would be managed by the TEE
 
 # Make sure we have the required configuration
-if not OCEANSWAP_ADDRESS:
-    raise ValueError("OCEANSWAP_ADDRESS environment variable is required")
+if not ROFLSWAP_ADDRESS:
+    raise ValueError("ROFLSWAP_ADDRESS environment variable is required")
 
 if not PRIVATE_KEY:
     raise ValueError("PRIVATE_KEY environment variable is required")
 
-print("Initializing OceanSwap ROFL app...")
-print(f"OceanSwap contract address: {OCEANSWAP_ADDRESS}")
+print("Initializing ROFLSwap ROFL app...")
+print(f"ROFLSwap contract address: {ROFLSWAP_ADDRESS}")
 print(f"Web3 provider: {WEB3_PROVIDER}")
 
 # Setup components
-matching_engine = MatchingEngine(OCEANSWAP_ADDRESS, WEB3_PROVIDER)
-settlement_engine = SettlementEngine(OCEANSWAP_ADDRESS, WEB3_PROVIDER, PRIVATE_KEY)
+matching_engine = MatchingEngine(ROFLSWAP_ADDRESS, WEB3_PROVIDER)
+settlement_engine = SettlementEngine(ROFLSWAP_ADDRESS, WEB3_PROVIDER, PRIVATE_KEY)
 storage = OrderStorage()
 
 def match_and_settle():
@@ -69,4 +69,4 @@ match_and_settle()
 # Register the task to run periodically (e.g., every 60 seconds)
 register_periodic_task(match_and_settle, interval_seconds=60)
 
-print("OceanSwap ROFL app initialized and running")
+print("ROFLSwap ROFL app initialized and running")

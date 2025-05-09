@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Test runner script for OceanSwap ROFL App
+# Test runner script for ROFLSwap ROFL App
 
 import os
 import sys
@@ -7,11 +7,11 @@ import unittest
 import pytest
 import json
 
-print("Running OceanSwap ROFL App tests...")
+print("Running ROFLSwap ROFL App tests...")
 
 # Set test environment variables
 os.environ['MOCK_INSIDE_ROFL'] = 'true'
-os.environ['OCEANSWAP_ADDRESS'] = '0xTestContract'
+os.environ['ROFLSWAP_ADDRESS'] = '0xTestContract'
 os.environ['WEB3_PROVIDER'] = 'https://test.provider'
 os.environ['PRIVATE_KEY'] = '0xTestKey'
 
@@ -19,7 +19,7 @@ os.environ['PRIVATE_KEY'] = '0xTestKey'
 os.makedirs('abi', exist_ok=True)
 
 # Create mock ABI files with proper format for Web3
-oceanswap_abi = [
+roflswap_abi = [
     {
         "type": "function",
         "name": "orderCounter",
@@ -86,8 +86,8 @@ erc20_abi = [
 ]
 
 # Write ABIs to files
-with open('abi/OceanSwap.json', 'w') as f:
-    json.dump(oceanswap_abi, f, indent=2)
+with open('abi/ROFLSwap.json', 'w') as f:
+    json.dump(roflswap_abi, f, indent=2)
 
 with open('abi/PrivateERC20.json', 'w') as f:
     json.dump(erc20_abi, f, indent=2)

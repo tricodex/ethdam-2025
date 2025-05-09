@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Settlement engine for the OceanSwap ROFL application
+# Settlement engine for the ROFLSwap ROFL application
 
 import json
 import time
@@ -10,17 +10,17 @@ from rofl import ensure_inside_rofl, get_contract, sign_with_tee_key
 ensure_inside_rofl()
 
 class SettlementEngine:
-    def __init__(self, oceanswap_address, web3_provider, private_key):
-        """Initialize the settlement engine with the OceanSwap contract address"""
+    def __init__(self, roflswap_address, web3_provider, private_key):
+        """Initialize the settlement engine with the ROFLSwap contract address"""
         self.web3 = Web3(Web3.HTTPProvider(web3_provider))
         
         # Load contract ABI
-        with open('abi/OceanSwap.json', 'r') as f:
-            oceanswap_abi = json.load(f)
+        with open('abi/ROFLSwap.json', 'r') as f:
+            roflswap_abi = json.load(f)
         
-        self.oceanswap = self.web3.eth.contract(
-            address=oceanswap_address,
-            abi=oceanswap_abi
+        self.roflswap = self.web3.eth.contract(
+            address=roflswap_address,
+            abi=roflswap_abi
         )
         
         # The private key used for signing transactions
@@ -39,7 +39,7 @@ class SettlementEngine:
                 print(f"Executing match: Buy order {match['buyOrderId']} with Sell order {match['sellOrderId']}")
                 
                 # Prepare the transaction
-                tx = self.oceanswap.functions.executeMatch(
+                tx = self.roflswap.functions.executeMatch(
                     match['buyOrderId'],
                     match['sellOrderId'],
                     match['buyerAddress'],

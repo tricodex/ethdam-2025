@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Storage utilities for the OceanSwap ROFL application
+# Storage utilities for the ROFLSwap ROFL application
 
 import json
 import os

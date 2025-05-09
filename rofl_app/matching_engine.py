@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Matching Engine for the OceanSwap ROFL application
+# Matching Engine for the ROFLSwap ROFL application
 
 import json
 import time
@@ -10,17 +10,17 @@ from rofl import ensure_inside_rofl, get_contract, decrypt, sign_with_tee_key
 ensure_inside_rofl()
 
 class MatchingEngine:
-    def __init__(self, oceanswap_address, web3_provider):
-        """Initialize the matching engine with the OceanSwap contract address"""
+    def __init__(self, roflswap_address, web3_provider):
+        """Initialize the matching engine with the ROFLSwap contract address"""
         self.web3 = Web3(Web3.HTTPProvider(web3_provider))
         
         # Load contract ABI
-        with open('abi/OceanSwap.json', 'r') as f:
-            oceanswap_abi = json.load(f)
+        with open('abi/ROFLSwap.json', 'r') as f:
+            roflswap_abi = json.load(f)
         
-        self.oceanswap = self.web3.eth.contract(
-            address=oceanswap_address,
-            abi=oceanswap_abi
+        self.roflswap = self.web3.eth.contract(
+            address=roflswap_address,
+            abi=roflswap_abi
         )
         
         # Order book structure
@@ -29,7 +29,7 @@ class MatchingEngine:
     
     def load_orders(self):
         """Load all unmatched orders from the contract"""
-        order_count = self.oceanswap.functions.orderCounter().call()
+        order_count = self.roflswap.functions.orderCounter().call()
         print(f"Total orders in contract: {order_count}")
         
         self.buy_orders = []
@@ -37,12 +37,12 @@ class MatchingEngine:
         
         for order_id in range(1, order_count + 1):
             # Skip filled orders
-            if self.oceanswap.functions.filledOrders(order_id).call():
+            if self.roflswap.functions.filledOrders(order_id).call():
                 continue
                 
             # Fetch encrypted order
             try:
-                encrypted_order = self.oceanswap.functions.getEncryptedOrder(order_id).call()
+                encrypted_order = self.roflswap.functions.getEncryptedOrder(order_id).call()
                 
                 # Decrypt the order inside the TEE
                 order = decrypt(encrypted_order)

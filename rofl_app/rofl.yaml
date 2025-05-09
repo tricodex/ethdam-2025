@@ -21,7 +21,7 @@ deployments:
     network: testnet
     paratime: sapphire
     admin: myaccount
-    oci_repository: rofl.sh/f601fbb2-0722-4dd8-9652-027f53051c30:1746816312
+    oci_repository: rofl.sh/c384f2c6-96f6-4276-a0d6-eac331dba310:1746822744
     trust_root:
       height: 26521447
       hash: c1476e1725c7cc2932b71061fa8004bdcd866ad568d5adb9f82748f3e76a7b57
@@ -32,21 +32,21 @@ deployments:
           min_tcb_evaluation_data_number: 18
           tdx: {}
       enclaves:
-        - id: gLUlffA46HYePZfjbrGSnfwvOv1hk8RIT8uR/laWULcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-        - id: mLsiJJvN0o/D+O6BWL9aqejYug+BrN5o3eEd2S9W/nIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: 1muUJuOvMjL32s+Dt+Mz0ij1sThu0VmpeY9ovucnUzcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: LYM+30pTzpJ+dqmmt8dfPncg3cgDypvbWYcslDQn+doAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
       endorsements:
         - any: {}
       fees: endorsing_node
       max_expiration: 3
     secrets:
-      - name: OCEANSWAP_ADDRESS
-        value: pGJwa1gggXvHgtDurNkq7dMtYqdchJtYLu5Sjztp9l4FjbyCriBkbmFtZVghFQV5shAixfMxWTl64P8upr4/+7FKyMzC1b9bn3xQRMdkZW5vbmNlT801y1UHISeujIzeoB0OhmV2YWx1ZVgeMB7ldy9bK/dtGftw/gq/Esj3NVxWTCa+VOfY52lI
       - name: WEB3_PROVIDER
         value: pGJwa1gghHGpR9Dg33OqCQoh0uFUuAAvCyeLwOljDF8ETOk0IFRkbmFtZVgdiVhWQ4X6+DwwcU52YxLpVm5BZViYfJNjpYDyLeJlbm9uY2VP0CmbUF/KZCMyBNrUmVMHZXZhbHVlWDH3WMy2ZxEDYpiT2L1yvrWlf9BLWHc76y9R6fMzXIGw+GtYEL+OuwuFqDJR6xq0giH2
       - name: PRIVATE_KEY
         value: pGJwa1ggJIkAbJ08XMvdZvM1wlCoB2003KTPh6CUq/hfDS986m1kbmFtZVgbpemyyTwe+9YhocCZ6U6IR6e7j5pLaMoX+j4EZW5vbmNlT562TyhZT5AkNDoOJstUKGV2YWx1ZVgZ+miu1Vf7HWcX/KPyzjQ4CPi+ytds7b7z6A==
+      - name: ROFLSWAP_ADDRESS
+        value: pGJwa1ggKNHyuIOHpR++dkcB8XwdDiQBoAGFXsTxA0RjgSx1p2hkbmFtZVgg7grEpiwgJsvBC+d1oV7KDVi9MXOBVsvfAyFAm++s3Bllbm9uY2VPxS27AvEDyYfkS0FTMruWZXZhbHVlWDoRMwIrO+AEFdXFB+4y8M1UwHzwxLsjbcf5Awj+1q3Km5sOwuLqsKVCm4oYyG37I9eF3myOwwbR2Fz3
     machines:
       default:
         provider: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
         offer: playground_short
-        id: 000000000000001a
+        id: 000000000000001e

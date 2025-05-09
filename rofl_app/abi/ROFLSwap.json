@@ -1,0 +1,97 @@
+[
+  {
+    "type": "function",
+    "name": "orderCounter",
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "stateMutability": "view",
+    "constant": true
+  },
+  {
+    "type": "function",
+    "name": "filledOrders",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "orderId"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": ""
+      }
+    ],
+    "stateMutability": "view",
+    "constant": true
+  },
+  {
+    "type": "function",
+    "name": "getEncryptedOrder",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "orderId"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "string",
+        "name": ""
+      }
+    ],
+    "stateMutability": "view",
+    "constant": true
+  },
+  {
+    "type": "function",
+    "name": "executeMatch",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "buyOrderId"
+      },
+      {
+        "type": "uint256",
+        "name": "sellOrderId"
+      },
+      {
+        "type": "address",
+        "name": "buyer"
+      },
+      {
+        "type": "address",
+        "name": "seller"
+      },
+      {
+        "type": "uint256",
+        "name": "amount"
+      },
+      {
+        "type": "uint256",
+        "name": "price"
+      },
+      {
+        "type": "address",
+        "name": "buyToken"
+      },
+      {
+        "type": "address",
+        "name": "sellToken"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": ""
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "constant": false
+  }
+]
