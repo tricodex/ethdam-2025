@@ -3,4 +3,4 @@
     url = https://github.com/tricodex/ethdam-next.git
 [submodule "demo-starter-fork"]
 	path = demo-starter-fork
-	url = ./demo-starter-fork
+	url = https://github.com/gieljoo/demo-starter-fork.git
