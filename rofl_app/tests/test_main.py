@@ -22,7 +22,7 @@ class TestMainModule(unittest.TestCase):
         """Test initialization of the main module"""
         # Set environment variables
         with patch.dict(os.environ, {
-            'OCEANSWAP_ADDRESS': '0xTestContract',
+            'ROFLSwap_ADDRESS': '0xTestContract',
             'WEB3_PROVIDER': 'https://test.provider',
             'PRIVATE_KEY': '0xTestKey'
         }):
@@ -65,7 +65,7 @@ class TestMainModule(unittest.TestCase):
         
         # Clear required environment variables
         with patch.dict(os.environ, {
-            'OCEANSWAP_ADDRESS': '',
+            'ROFLSwap_ADDRESS': '',
             'PRIVATE_KEY': ''
         }, clear=True):
             # Check that main module raises ValueError on import
@@ -86,7 +86,7 @@ class TestMainModule(unittest.TestCase):
         """Test match_and_settle function with successful matches"""
         # Set environment variables
         with patch.dict(os.environ, {
-            'OCEANSWAP_ADDRESS': '0xTestContract',
+            'ROFLSwap_ADDRESS': '0xTestContract',
             'WEB3_PROVIDER': 'https://test.provider',
             'PRIVATE_KEY': '0xTestKey'
         }):
@@ -167,7 +167,7 @@ class TestMainModule(unittest.TestCase):
         """Test match_and_settle function with no matches found"""
         # Set environment variables
         with patch.dict(os.environ, {
-            'OCEANSWAP_ADDRESS': '0xTestContract',
+            'ROFLSwap_ADDRESS': '0xTestContract',
             'WEB3_PROVIDER': 'https://test.provider',
             'PRIVATE_KEY': '0xTestKey'
         }):
@@ -221,7 +221,7 @@ class TestMainModule(unittest.TestCase):
         """Test match_and_settle function with an exception"""
         # Set environment variables
         with patch.dict(os.environ, {
-            'OCEANSWAP_ADDRESS': '0xTestContract',
+            'ROFLSwap_ADDRESS': '0xTestContract',
             'WEB3_PROVIDER': 'https://test.provider',
             'PRIVATE_KEY': '0xTestKey'
         }):

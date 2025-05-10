@@ -1,8 +1,9 @@
 {
   "network": "sapphire-testnet",
-  "waterToken": "0xa24286675FCa7a93af65B25dD3895Fb0f273Ed6D",
-  "fireToken": "0xE987534F8E431c2D0F6DDa8D832d8ae622c77814",
-  "roflSwap": "0x941b3c3106D11E91a94f62528e20716c2919fdde",
+  "contractAddress": "0x9b6e338C0b8d27833D788D4e0a429cCe6924c490",
+  "waterToken": "0x1234567890123456789012345678901234567890",
+  "fireToken": "0x2345678901234567890123456789012345678901",
   "roflAppId": "rofl1qqxpkwggyjaw6du7c2vzgdggwhjvjqp9tvqzkag3",
-  "deploymentTime": "2025-05-09T19:40:56.462Z"
+  "deployer": "0xF449C755DEc0FA9c655869A3D8D89fb2cCC399e6",
+  "timestamp": "2025-05-10T10:44:48.177Z"
 }

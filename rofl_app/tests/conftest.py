@@ -70,7 +70,7 @@ def env_vars():
     """Set up environment variables for testing"""
     original_env = os.environ.copy()
     os.environ.update({
-        'OCEANSWAP_ADDRESS': '0xTestContract',
+        'ROFLSwap_ADDRESS': '0xTestContract',
         'WEB3_PROVIDER': 'https://test.provider',
         'PRIVATE_KEY': '0xTestKey',
         'MOCK_INSIDE_ROFL': 'true'

@@ -35,7 +35,7 @@ class TestMatchingEngine(unittest.TestCase):
             
             # Replace the web3 and contract instance with our mocks
             self.engine.web3 = self.mock_web3
-            self.engine.oceanswap = self.mock_contract
+            self.engine.ROFLSwap = self.mock_contract
         
         # Sample buy orders
         self.buy_orders = [

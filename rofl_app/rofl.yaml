@@ -21,6 +21,7 @@ deployments:
     network: testnet
     paratime: sapphire
     admin: myaccount
+    oci_repository: rofl.sh/96781e70-23d8-4f84-b2a6-2225f6770f68:1746874107
     trust_root:
       height: 26521447
       hash: c1476e1725c7cc2932b71061fa8004bdcd866ad568d5adb9f82748f3e76a7b57
@@ -31,8 +32,8 @@ deployments:
           min_tcb_evaluation_data_number: 18
           tdx: {}
       enclaves:
-        - 13wQscKd7vrGi1Cgek3oXUEMwM8aWydS42sl32vclVUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-        - 1jXXs+fzT9bnwAmTLVB2APQs5LAIbbyN9VmGVSKBu4QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: XIfrbekWt19n+ClXE+s3wWmo53vamavQYg74tS38H1oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: sEAc/ygNenAXodRbcW4MExCoLnQ6iLO30YVlI5BC4d0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
       endorsements:
         - any: {}
       fees: endorsing_node
@@ -43,4 +44,9 @@ deployments:
       - name: PRIVATE_KEY
         value: pGJwa1ggJIkAbJ08XMvdZvM1wlCoB2003KTPh6CUq/hfDS986m1kbmFtZVgbpemyyTwe+9YhocCZ6U6IR6e7j5pLaMoX+j4EZW5vbmNlT562TyhZT5AkNDoOJstUKGV2YWx1ZVgZ+miu1Vf7HWcX/KPyzjQ4CPi+ytds7b7z6A==
       - name: ROFLSWAP_ADDRESS
-        value: pGJwa1ggKNHyuIOHpR++dkcB8XwdDiQBoAGFXsTxA0RjgSx1p2hkbmFtZVgg7grEpiwgJsvBC+d1oV7KDVi9MXOBVsvfAyFAm++s3Bllbm9uY2VPxS27AvEDyYfkS0FTMruWZXZhbHVlWDoRMwIrO+AEFdXFB+4y8M1UwHzwxLsjbcf5Awj+1q3Km5sOwuLqsKVCm4oYyG37I9eF3myOwwbR2Fz3
+        value: pGJwa1ggq7Z1S5xqTZSa+fy8Vs1JhQ9xInezdsqR3FfHxWzQHzdkbmFtZVgg9gbrf6Yt7ST81JTUDYKvb2SgyyUIRLwiBPkAmZ5uA9llbm9uY2VPIknQz0Rl3nlC6ISZGLveZXZhbHVlWDpF1BzirdX8GXYDqeYJhJ1/5sxs0hZfQ94ourNz8dtbuhrdGJcMus3NZuV1nxH3drAp/cJvmyUSaQYq
+    machines:
+      default:
+        provider: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
+        offer: playground_short
+        id: "0000000000000032"

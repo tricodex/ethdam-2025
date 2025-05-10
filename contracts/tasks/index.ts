@@ -1,4 +1,6 @@
 import { task } from "hardhat/config";
+import "./deploy";
+import "./tokens";
 
 task("accounts", "Show the list of accounts", async (_, hre) => {
   const accounts = await hre.viem.getWalletClients();

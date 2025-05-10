@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title ROFLSwap
- * @dev A simplified version of OceanSwap that maintains the ROFL app integration
+ * @dev A simplified version of ROFLSwap that maintains the ROFL app integration
  * without the complex private token wrapping functionality.
  */
 contract ROFLSwap is Ownable {

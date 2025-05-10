@@ -1,10 +1,16 @@
-# OceanSwap: Privacy-Preserving DEX with Oasis Sapphire & ROFL
+# ROFLSwap/ROFLSwap: Privacy-Preserving DEX with Oasis Sapphire & ROFL
 
-OceanSwap is a privacy-preserving decentralized exchange built for the ETHDam hackathon, showcasing the power of Oasis Sapphire's confidential EVM and ROFL (Runtime Off-chain Logic) framework.
+ROFLSwap (also known as ROFLSwap in parts of the codebase) is a privacy-preserving decentralized exchange built for the ETHDam hackathon, showcasing the power of Oasis Sapphire's confidential EVM and ROFL (Runtime Off-chain Logic) framework.
+
+> ⚠️ **Important Update**: The project has been renamed from ROFLSwap to ROFLSwap in some files for better consistency with the Oasis ROFL framework. The functionality remains the same. Look for both names in the codebase.
+
+## Quick Start for Authentication Fix
+
+If you're encountering authentication issues between the ROFL app and the smart contract, see the [Authentication Fix Guide](./AUTHENTICATION_FIX.md) for step-by-step instructions on resolving the issue.
 
 ## Key Features
 
-- **Full Privacy Trading**: OceanSwap provides end-to-end privacy for traders
+- **Full Privacy Trading**: ROFLSwap provides end-to-end privacy for traders
 - **Private Token Wrapping**: Wrap standard ERC20 tokens (WATER & FIRE) into private versions
 - **Secure Off-chain Matching**: Trade matching happens securely inside a Trusted Execution Environment (TEE)
 - **Hidden Orders & Balances**: No one can see your orders or token balances
@@ -12,16 +18,16 @@ OceanSwap is a privacy-preserving decentralized exchange built for the ETHDam ha
 
 ## Project Structure
 
-- **/contracts**: Smart contracts for OceanSwap, WATER token, and FIRE token
+- **/contracts**: Smart contracts for ROFLSwap, WATER token, and FIRE token
 - **/ethdam-next**: Next.js frontend application
 - **/rofl_app**: ROFL application for secure order matching
 
 ## Architecture Overview
 
-OceanSwap consists of three main components:
+ROFLSwap consists of three main components:
 
 1. **Smart Contracts (Sapphire EVM)**
-   - OceanSwap.sol: Main contract for order submission and settlement
+   - ROFLSwapV2.sol: Main contract for order submission and settlement
    - PrivateWrapper.sol: Wraps standard ERC20s into confidential versions
    - WaterToken.sol & FireToken.sol: Standard ERC20 token implementations
 
@@ -33,15 +39,29 @@ OceanSwap consists of three main components:
 3. **Frontend (Next.js)**
    - Built using Sapphire's Web3 wrappers for confidential transactions
 
+## Deployed Contracts
+
+| Contract | Address | Network |
+|----------|---------|---------|
+| ROFLSwapV2 | 0x552F5B746097219537F1041aA406c02F3474417A | Sapphire Testnet |
+| WaterToken | 0xa24286675FCa7a93af65B25dD3895Fb0f273Ed6D | Sapphire Testnet |
+| FireToken | 0xE987534F8E431c2D0F6DDa8D832d8ae622c77814 | Sapphire Testnet |
+
+## ROFL App Details
+
+- **ROFL App ID**: rofl1qqxpkwggyjaw6du7c2vzgdggwhjvjqp9tvqzkag3
+- **Machine ID**: 0000000000000026
+- **Provider**: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
+
 ## How It Works
 
 1. **Token Wrapping**:
-   - Users deposit standard WATER or FIRE tokens into the OceanSwap contract
+   - Users deposit standard WATER or FIRE tokens into the ROFLSwap contract
    - These tokens get wrapped into private pWATER and pFIRE tokens
    - Balances of wrapped tokens are hidden from everyone except the owner
 
 2. **Order Submission**:
-   - Users submit encrypted orders to the OceanSwap contract
+   - Users submit encrypted orders to the ROFLSwap contract
    - Order details (price, size, direction) are only visible inside the TEE
 
 3. **Matching & Settlement**:
@@ -55,7 +75,7 @@ OceanSwap consists of three main components:
 
 ## Why Private Token Wrapping?
 
-OceanSwap uses private token wrapping to ensure complete privacy throughout the trading lifecycle:
+ROFLSwap uses private token wrapping to ensure complete privacy throughout the trading lifecycle:
 
 - **Hidden Balances**: No one can see how many tokens you hold
 - **Invisible Transfers**: Token transfers between users remain confidential
@@ -70,9 +90,9 @@ This approach provides significantly stronger privacy guarantees compared to onl
 
 ```bash
 cd contracts
-npm install
-npx hardhat compile
-npx hardhat run scripts/deploy.ts --network sapphire-testnet
+bun install
+bunx hardhat compile
+bunx hardhat run scripts/deploy.ts --network sapphire-testnet
 ```
 
 ### ROFL Application
@@ -80,9 +100,18 @@ npx hardhat run scripts/deploy.ts --network sapphire-testnet
 ```bash
 cd rofl_app
 pip install -r requirements.txt
-export OCEANSWAP_ADDRESS="<deployed-contract-address>"
-export PRIVATE_KEY="<your-private-key>"
-python main.py
+
+# Set up the required environment variables
+echo -n "0x552F5B746097219537F1041aA406c02F3474417A" | oasis rofl secret set ROFLSWAP_ADDRESS -
+echo -n "https://testnet.sapphire.oasis.io" | oasis rofl secret set WEB3_PROVIDER -
+echo -n "<your-private-key>" | oasis rofl secret set PRIVATE_KEY -
+
+# Verify the ROFL app address matches the contract's roflApp address
+python verify_address.py
+
+# Update the contract's roflApp address if needed
+cd ../contracts
+bunx hardhat run scripts/update-rofl-app.ts --network sapphire-testnet
 ```
 
 ### Frontend
@@ -92,6 +121,34 @@ cd ethdam-next
 npm install
 npm run dev
 ```
+
+## Troubleshooting
+
+If you encounter issues with the ROFL app authentication, follow these steps:
+
+1. **Verify the addresses match**:
+   ```bash
+   cd rofl_app
+   python verify_address.py
+   ```
+
+2. **Update the contract's roflApp address**:
+   ```bash
+   cd contracts
+   bunx hardhat run scripts/update-rofl-app.ts --network sapphire-testnet
+   ```
+
+3. **Restart the ROFL app**:
+   ```bash
+   oasis rofl machine restart
+   ```
+
+4. **Check the ROFL app logs**:
+   ```bash
+   oasis rofl machine logs
+   ```
+
+For more detailed troubleshooting, see the [Authentication Fix Guide](./AUTHENTICATION_FIX.md).
 
 ## License
 

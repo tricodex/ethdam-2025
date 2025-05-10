@@ -4,18 +4,18 @@
 import json
 import time
 from web3 import Web3
-from rofl import ensure_inside_rofl, get_contract, sign_with_tee_key
+from rofl_integration import ensure_inside_rofl, sign_submit_transaction
 
 # Ensure this code runs in a TEE
 ensure_inside_rofl()
 
 class SettlementEngine:
-    def __init__(self, roflswap_address, web3_provider, private_key):
+    def __init__(self, roflswap_address, web3_provider, private_key=None):
         """Initialize the settlement engine with the ROFLSwap contract address"""
         self.web3 = Web3(Web3.HTTPProvider(web3_provider))
         
         # Load contract ABI
-        with open('abi/ROFLSwap.json', 'r') as f:
+        with open('abi/ROFLSwapV3.json', 'r') as f:
             roflswap_abi = json.load(f)
         
         # Convert contract address to checksum address
@@ -26,16 +26,17 @@ class SettlementEngine:
             abi=roflswap_abi
         )
         
-        # The private key used for signing transactions
-        # In a real ROFL app, this would be managed by the TEE
+        # Private key is no longer needed as we'll use ROFL's transaction signing
         self.private_key = private_key
         
-        # Get the account address from the private key
-        self.account = self.web3.eth.account.from_key(private_key).address
-        print(f"Settlement engine initialized with account: {self.account}")
+        print(f"Settlement engine initialized with ROFLSwap at: {self.roflswap_address}")
     
     def execute_matches(self, matches):
-        """Execute the matched orders by calling the contract"""
+        """
+        Execute the matched orders by calling the contract
+        
+        Using the ROFL app's authenticated identity instead of a private key.
+        """
         results = []
         
         for match in matches:
@@ -45,8 +46,6 @@ class SettlementEngine:
                 # Convert address and numeric types properly
                 buyer_address = Web3.to_checksum_address(match['buyerAddress'])
                 seller_address = Web3.to_checksum_address(match['sellerAddress'])
-                buy_token = Web3.to_checksum_address(match['buyToken'])
-                sell_token = Web3.to_checksum_address(match['sellToken'])
                 amount = int(match['amount'])
                 price = int(match['price'])
                 
@@ -57,58 +56,75 @@ class SettlementEngine:
                 print(f"- Seller address: {seller_address}")
                 print(f"- Amount: {amount}")
                 print(f"- Price: {price}")
-                print(f"- Buy token: {buy_token}")
-                print(f"- Sell token: {sell_token}")
                 
-                # Get current gas price with a small increase
-                gas_price = int(self.web3.eth.gas_price * 1.1)
-                
-                # Prepare the transaction
-                tx = self.roflswap.functions.executeMatch(
+                # Create the transaction data using the contract's function encoding
+                tx_data = self.roflswap.functions.executeMatch(
                     int(match['buyOrderId']),
                     int(match['sellOrderId']),
                     buyer_address,
                     seller_address,
                     amount,
-                    price,
-                    buy_token,
-                    sell_token
-                ).build_transaction({
-                    'from': self.account,
-                    'nonce': self.web3.eth.get_transaction_count(self.account),
-                    'gas': 700000,
-                    'gasPrice': gas_price
-                })
+                    price
+                ).build_transaction({'gas': 0, 'gasPrice': 0, 'nonce': 0})['data']
                 
-                print(f"Transaction prepared: {tx}")
+                print(f"Transaction data prepared: {tx_data}")
                 
-                # Sign the transaction
-                signed_tx = self.web3.eth.account.sign_transaction(tx, self.private_key)
+                # Use ROFL's authenticated transaction signing and submission
+                response = sign_submit_transaction(
+                    tx_data=tx_data,
+                    to_address=self.roflswap_address,
+                    gas_limit=700000,
+                    value=0,
+                    encrypted=True  # Use end-to-end encryption for the transaction
+                )
                 
-                # Send the transaction
-                tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
-                tx_hash_hex = tx_hash.hex()
-                print(f"Transaction sent: {tx_hash_hex}")
-                
-                # Wait for the transaction to be mined
-                print(f"Waiting for transaction confirmation...")
-                receipt = self.web3.eth.wait_for_transaction_receipt(tx_hash)
-                
-                if receipt.status == 1:
-                    print(f"Transaction successful! Block: {receipt.blockNumber}, Gas used: {receipt.gasUsed}")
+                if response:
+                    tx_hash_hex = response.get('hash', 'Unknown')
+                    print(f"Transaction successfully submitted: {tx_hash_hex}")
+                    
+                    # Wait for transaction to be included in a block
+                    print(f"Waiting for transaction confirmation...")
+                    receipt = None
+                    for _ in range(30):  # Try for about 5 minutes (30 x 10 seconds)
+                        try:
+                            receipt = self.web3.eth.get_transaction_receipt(tx_hash_hex)
+                            if receipt:
+                                break
+                        except Exception as e:
+                            print(f"Waiting for receipt: {str(e)}")
+                        time.sleep(10)
+                    
+                    if receipt:
+                        if receipt.status == 1:
+                            print(f"Transaction successful! Block: {receipt.blockNumber}, Gas used: {receipt.gasUsed}")
+                        else:
+                            print(f"Transaction failed! Block: {receipt.blockNumber}, Gas used: {receipt.gasUsed}")
+                        
+                        results.append({
+                            'success': receipt.status == 1,
+                            'txHash': tx_hash_hex,
+                            'match': match,
+                            'receipt': {
+                                'blockNumber': receipt.blockNumber,
+                                'gasUsed': receipt.gasUsed,
+                                'status': receipt.status
+                            }
+                        })
+                    else:
+                        print("Could not get transaction receipt after waiting")
+                        results.append({
+                            'success': False,
+                            'txHash': tx_hash_hex,
+                            'match': match,
+                            'error': "Transaction not confirmed after waiting"
+                        })
                 else:
-                    print(f"Transaction failed! Block: {receipt.blockNumber}, Gas used: {receipt.gasUsed}")
-                
-                results.append({
-                    'success': receipt.status == 1,
-                    'txHash': tx_hash_hex,
-                    'match': match,
-                    'receipt': {
-                        'blockNumber': receipt.blockNumber,
-                        'gasUsed': receipt.gasUsed,
-                        'status': receipt.status
-                    }
-                })
+                    print("Failed to submit transaction")
+                    results.append({
+                        'success': False,
+                        'match': match,
+                        'error': "Failed to submit transaction"
+                    })
                 
             except Exception as e:
                 print(f"Error executing match: {str(e)}")

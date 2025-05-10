@@ -1,6 +1,6 @@
-# OceanSwap Contract Deployment Guide
+# ROFLSwap Contract Deployment Guide
 
-This guide explains how to deploy the OceanSwap contracts to the Oasis Sapphire network and integrate them with your ROFL application.
+This guide explains how to deploy the ROFLSwap contracts to the Oasis Sapphire network and integrate them with your ROFL application.
 
 ## Pre-requisites
 
@@ -44,8 +44,8 @@ This will:
 1. Install dependencies with bun
 2. Compile all contracts
 3. Deploy WaterToken and FireToken
-4. Deploy OceanSwap with references to those tokens
-5. Set your ROFL app ID in the OceanSwap contract
+4. Deploy ROFLSwap with references to those tokens
+5. Set your ROFL app ID in the ROFLSwap contract
 6. Save all contract addresses to a JSON file
 
 ### 3. Manual deployment
@@ -71,8 +71,8 @@ bun hardhat run scripts/deploy-with-rofl.ts --network sapphire
 After deployment, you need to configure your ROFL application to use the deployed contract addresses:
 
 1. Find the generated `deployment-{network}.json` file in the contracts directory
-2. Update your ROFL app with the `oceanSwap` contract address
-3. Make sure your ROFL app's ID is correctly set in the OceanSwap contract
+2. Update your ROFL app with the `ROFLSwap` contract address
+3. Make sure your ROFL app's ID is correctly set in the ROFLSwap contract
 
 ## Contract Verification
 
@@ -93,8 +93,8 @@ If transactions fail, check:
 ### ROFL Integration Issues
 
 If you encounter issues with ROFL integration:
-- Verify the app ID is correctly set in the OceanSwap contract
-- Check that your ROFL app is configured to access the OceanSwap contract
+- Verify the app ID is correctly set in the ROFLSwap contract
+- Check that your ROFL app is configured to access the ROFLSwap contract
 - Ensure you're using the correct contract addresses
 
-For more support, contact the OceanSwap team. 
+For more support, contact the ROFLSwap team. 

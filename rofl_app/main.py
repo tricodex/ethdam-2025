@@ -7,7 +7,7 @@ import os
 from matching_engine import MatchingEngine
 from settlement import SettlementEngine
 from storage import OrderStorage
-from rofl import ensure_inside_rofl, register_periodic_task
+from rofl_integration import ensure_inside_rofl, register_periodic_task
 
 # Ensure this code runs in a TEE
 ensure_inside_rofl()
@@ -15,7 +15,10 @@ ensure_inside_rofl()
 # Configuration
 ROFLSWAP_ADDRESS = os.environ.get('ROFLSWAP_ADDRESS')
 WEB3_PROVIDER = os.environ.get('WEB3_PROVIDER', 'https://testnet.sapphire.oasis.io')
-PRIVATE_KEY = os.environ.get('PRIVATE_KEY')  # In a real ROFL app, this would be managed by the TEE
+
+# In a real ROFL app, we'd use the key management system
+# rather than passing a private key through an environment variable
+PRIVATE_KEY = os.environ.get('PRIVATE_KEY')
 
 # Make sure we have the required configuration
 if not ROFLSWAP_ADDRESS:
