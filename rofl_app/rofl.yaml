@@ -1,52 +1,9 @@
-name: rofl_app
-version: 0.1.0
-tee: tdx
-kind: container
-resources:
-  memory: 512
-  cpus: 1
-  storage:
-    kind: disk-persistent
-    size: 512
-artifacts:
-  firmware: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.4.1/ovmf.tdx.fd#db47100a7d6a0c1f6983be224137c3f8d7cb09b63bb1c7a5ee7829d8e994a42f
-  kernel: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.4.1/stage1.bin#06e12cba9b2423b4dd5916f4d84bf9c043f30041ab03aa74006f46ef9c129d22
-  stage2: https://github.com/oasisprotocol/oasis-boot/releases/download/v0.4.1/stage2-podman.tar.bz2#6f2487aa064460384309a58c858ffea9316e739331b5c36789bb2f61117869d6
-  container:
-    runtime: https://github.com/oasisprotocol/oasis-sdk/releases/download/rofl-containers%2Fv0.5.0/rofl-containers#800be74e543f1d10d12ef6fadce89dd0a0ce7bc798dbab4f8d7aa012d82fbff1
-    compose: compose.yaml
-deployments:
-  default:
-    app_id: rofl1qqxpkwggyjaw6du7c2vzgdggwhjvjqp9tvqzkag3
-    network: testnet
-    paratime: sapphire
-    admin: myaccount
-    oci_repository: rofl.sh/96781e70-23d8-4f84-b2a6-2225f6770f68:1746874107
-    trust_root:
-      height: 26521447
-      hash: c1476e1725c7cc2932b71061fa8004bdcd866ad568d5adb9f82748f3e76a7b57
-    policy:
-      quotes:
-        pcs:
-          tcb_validity_period: 30
-          min_tcb_evaluation_data_number: 18
-          tdx: {}
-      enclaves:
-        - id: XIfrbekWt19n+ClXE+s3wWmo53vamavQYg74tS38H1oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-        - id: sEAc/ygNenAXodRbcW4MExCoLnQ6iLO30YVlI5BC4d0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-      endorsements:
-        - any: {}
-      fees: endorsing_node
-      max_expiration: 3
-    secrets:
-      - name: WEB3_PROVIDER
-        value: pGJwa1gghHGpR9Dg33OqCQoh0uFUuAAvCyeLwOljDF8ETOk0IFRkbmFtZVgdiVhWQ4X6+DwwcU52YxLpVm5BZViYfJNjpYDyLeJlbm9uY2VP0CmbUF/KZCMyBNrUmVMHZXZhbHVlWDH3WMy2ZxEDYpiT2L1yvrWlf9BLWHc76y9R6fMzXIGw+GtYEL+OuwuFqDJR6xq0giH2
-      - name: PRIVATE_KEY
-        value: pGJwa1ggJIkAbJ08XMvdZvM1wlCoB2003KTPh6CUq/hfDS986m1kbmFtZVgbpemyyTwe+9YhocCZ6U6IR6e7j5pLaMoX+j4EZW5vbmNlT562TyhZT5AkNDoOJstUKGV2YWx1ZVgZ+miu1Vf7HWcX/KPyzjQ4CPi+ytds7b7z6A==
-      - name: ROFLSWAP_ADDRESS
-        value: pGJwa1gg5y7AQNrcK1YeP6Ui5cJROvAtDrhWCSImaqT7Kx1jVh1kbmFtZVggy+DTQkcyD6Iz7MXqowtilIwdSEcFgnUhEwiP3Pj3ahplbm9uY2VP0b5pALVvvcKOi27q/TKHZXZhbHVlWDqt5NyUoGZRJmCjGAj0vNnbsDiVo6viPYG5Dt8wzmwdVV35NNbKTkSXv8V7Wnk+hhlDYQSmYDoydFm6
-    machines:
-      default:
-        provider: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
-        offer: playground_short
-        id: "0000000000000048"
+version: 0.1
+name: roflswap-order-matcher
+description: ROFLSwap Order Matching Engine for Oasis Sapphire
+provider:
+  url: https://testnet.sapphire.oasis.io
+  chainId: 23295
+compose:
+  file: docker-compose.yaml
+  service: roflswap-matcher 

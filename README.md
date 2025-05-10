@@ -3,7 +3,7 @@
 ```markdown
 # ROFLSwap: Privacy-Preserving DEX with Oasis Sapphire & ROFL
 
-ROFLSwap is a privacy-preserving decentralized exchange built for the ETHDam hackathon, showcasing the power of Oasis Sapphire's confidential EVM and ROFL (Runtime Off-chain Logic) framework.
+ROFLSwap is a privacy-preserving darkpool exchange built for the ETHDam hackathon, showcasing the power of Oasis Sapphire's confidential EVM and ROFL (Runtime Off-chain Logic) framework.
 
 ## Key Features
 

@@ -1,11 +1,13 @@
 services:
-  roflswap-order-matcher:
+  roflswap-matcher:
     build: .
-    image: "roflswap-order-matcher"
+    image: "ghcr.io/your-username/roflswap-matcher:latest"
     platform: linux/amd64
-    volumes:
-      - ./storage:/app/storage
     environment:
+      - PRIVATE_KEY=${PRIVATE_KEY}
       - ROFLSWAP_ADDRESS=${ROFLSWAP_ADDRESS}
       - WEB3_PROVIDER=${WEB3_PROVIDER}
-      - PRIVATE_KEY=${PRIVATE_KEY}
+      - ROFL_APP_ID=${ROFL_APP_ID}
+    volumes:
+      - /run/rofl-appd.sock:/run/rofl-appd.sock
+      - ./storage:/app/storage
