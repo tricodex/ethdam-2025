@@ -1,77 +1,51 @@
-# ROFLSwap ROFL Application
+# ROFLSwap Order Matcher
 
-This is the ROFL (Runtime Off-chain Logic) component of the ROFLSwap decentralized exchange. It runs inside a Trusted Execution Environment (TEE) and handles the private order matching and settlement process.
+This project consists of an order matching engine for ROFLSwap.
 
-## Components
+## Prerequisites
 
-1. **matching_engine.py**: Handles the order matching logic
-2. **settlement.py**: Executes settlements on the ROFLSwap contract
-3. **storage.py**: Manages secure storage of orders and matches
-4. **main.py**: Entry point for the ROFL application
-5. **rofl.py**: Mock implementation of ROFL framework for testing and local development
+- Docker
+- Docker Compose
+- An Ethereum private key for transaction signing
+- The address of a deployed ROFLSwap contract
 
-## How It Works
+## Running the Order Matcher
 
-1. The ROFL app periodically fetches encrypted orders from the ROFLSwap contract
-2. Inside the TEE, it decrypts the orders and matches compatible buy and sell orders
-3. Matched trades are executed on-chain through the ROFLSwap contract
-4. All sensitive information is processed securely inside the TEE
+The order matcher is responsible for matching orders on the ROFLSwap contract and executing trades.
 
-## Setup
-
-1. Create a directory called `abi` and place the contract ABIs there:
-   - ROFLSwap.json
-   - PrivateERC20.json
-
-2. Set up the required environment variables:
-   ```
-   export ROFLSWAP_ADDRESS="<deployed-contract-address>"
-   export WEB3_PROVIDER="https://testnet.sapphire.oasis.io"
-   export PRIVATE_KEY="<your-private-key>"
+1. Set the required environment variables:
+   ```bash
+   export ROFLSWAP_ADDRESS=your_roflswap_contract_address
+   export WEB3_PROVIDER=your_web3_provider_url
+   export PRIVATE_KEY=your_private_key
    ```
 
-3. Install requirements:
-   ```
-   pip install -r requirements.txt
-   ```
-
-4. Run the application:
-   ```
-   python main.py
+2. Build and run the order matcher:
+   ```bash
+   docker compose build
+   docker compose up -d
    ```
 
-## Testing
-
-The application includes comprehensive tests for all components. To run the tests:
-
-1. Install the development dependencies:
-   ```
-   pip install -r requirements.txt
+3. Check the logs:
+   ```bash
+   docker compose logs -f
    ```
 
-2. Run the tests:
-   ```
-   python run_tests.py
-   ```
+## Running Tests
 
-This will execute both unittest and pytest test suites. The test runner automatically:
-- Creates mock ABI files for testing
-- Sets up the necessary environment variables
-- Verifies all components function correctly in isolation and together
+A test script is provided to build the image:
 
-You can also run individual test modules:
-```
-python -m unittest tests/test_rofl.py
-python -m pytest tests/test_matching_engine.py
+```bash
+./run_tests.sh
 ```
 
-## Security
+## Project Structure
 
-This ROFL application enhances the privacy of the ROFLSwap protocol by:
-
-1. Decrypting orders only inside the TEE
-2. Processing matching logic securely without exposing order details
-3. Signing settlement transactions from within the TEE
-4. Storing sensitive information in a secure storage
-
-All processing happens inside the secure ROFL environment, ensuring that order information remains confidential throughout the entire trading lifecycle.
+- `main.py`: Main entry point for the order matcher
+- `matching_engine.py`: Order matching logic
+- `settlement.py`: Trade settlement logic
+- `storage.py`: Storage utilities
+- `Dockerfile`: Dockerfile for the order matcher
+- `compose.yaml`: Docker Compose file for the order matcher
+- `requirements.txt`: Python dependencies
+- `abi/`: Directory containing contract ABIs 

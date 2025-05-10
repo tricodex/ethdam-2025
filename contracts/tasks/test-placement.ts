@@ -44,12 +44,12 @@ task("test-placement", "Test order placement on ROFLSwap")
     // The orders need to be encrypted, but for testing, we'll use simple JSON
     // In a real app, we'd use the Sapphire's encryption utilities
     
-    // Buy order for WATER tokens
+    // Buy order for WATER tokens - with an exact matching price
     const buyOrder = JSON.stringify({
       owner: signer.address,
       token: taskArgs.watertoken,
-      price: hre.ethers.parseEther("1.5").toString(), // Price in terms of FIRE/WATER
-      size: hre.ethers.parseEther("10").toString(),
+      price: hre.ethers.parseEther("1.0").toString(), // Same price
+      size: hre.ethers.parseEther("5").toString(),
       isBuy: true
     });
     
@@ -57,8 +57,8 @@ task("test-placement", "Test order placement on ROFLSwap")
     const sellOrder = JSON.stringify({
       owner: signer.address,
       token: taskArgs.watertoken,
-      price: hre.ethers.parseEther("1.4").toString(), // Price in terms of FIRE/WATER
-      size: hre.ethers.parseEther("10").toString(),
+      price: hre.ethers.parseEther("1.0").toString(), // Same price
+      size: hre.ethers.parseEther("5").toString(),
       isBuy: false
     });
     

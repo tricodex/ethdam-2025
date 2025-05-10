@@ -1,17 +1,11 @@
-version: '3'
-
 services:
-  roflswap-rofl:
-    image: python:3.9-slim
-    container_name: roflswap-rofl
-    working_dir: /app
+  roflswap-order-matcher:
+    build: .
+    image: "roflswap-order-matcher"
+    platform: linux/amd64
     volumes:
-      - ./:/app
-      - /run/rofl-appd.sock:/run/rofl-appd.sock  # Important: Mount the ROFL socket
-    command: >
-      bash -c "pip install -r requirements.txt && 
-               python main.py"
+      - ./storage:/app/storage
     environment:
       - ROFLSWAP_ADDRESS=${ROFLSWAP_ADDRESS}
       - WEB3_PROVIDER=${WEB3_PROVIDER}
-    restart: unless-stopped
+      - PRIVATE_KEY=${PRIVATE_KEY}

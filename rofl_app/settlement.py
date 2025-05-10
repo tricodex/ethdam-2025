@@ -4,10 +4,6 @@
 import json
 import time
 from web3 import Web3
-from rofl_integration import ensure_inside_rofl, sign_submit_transaction
-
-# Ensure this code runs in a TEE
-ensure_inside_rofl()
 
 class SettlementEngine:
     def __init__(self, roflswap_address, web3_provider, private_key=None):
@@ -16,7 +12,9 @@ class SettlementEngine:
         
         # Load contract ABI
         with open('abi/ROFLSwapV3.json', 'r') as f:
-            roflswap_abi = json.load(f)
+            contract_json = json.load(f)
+            # Extract the ABI array from the JSON structure
+            roflswap_abi = contract_json['abi']
         
         # Convert contract address to checksum address
         self.roflswap_address = Web3.to_checksum_address(roflswap_address)
@@ -26,7 +24,7 @@ class SettlementEngine:
             abi=roflswap_abi
         )
         
-        # Private key is no longer needed as we'll use ROFL's transaction signing
+        # Private key for transaction signing
         self.private_key = private_key
         
         print(f"Settlement engine initialized with ROFLSwap at: {self.roflswap_address}")
@@ -34,8 +32,6 @@ class SettlementEngine:
     def execute_matches(self, matches):
         """
         Execute the matched orders by calling the contract
-        
-        Using the ROFL app's authenticated identity instead of a private key.
         """
         results = []
         
@@ -57,29 +53,34 @@ class SettlementEngine:
                 print(f"- Amount: {amount}")
                 print(f"- Price: {price}")
                 
-                # Create the transaction data using the contract's function encoding
-                tx_data = self.roflswap.functions.executeMatch(
-                    int(match['buyOrderId']),
-                    int(match['sellOrderId']),
-                    buyer_address,
-                    seller_address,
-                    amount,
-                    price
-                ).build_transaction({'gas': 0, 'gasPrice': 0, 'nonce': 0})['data']
-                
-                print(f"Transaction data prepared: {tx_data}")
-                
-                # Use ROFL's authenticated transaction signing and submission
-                response = sign_submit_transaction(
-                    tx_data=tx_data,
-                    to_address=self.roflswap_address,
-                    gas_limit=700000,
-                    value=0,
-                    encrypted=True  # Use end-to-end encryption for the transaction
-                )
-                
-                if response:
-                    tx_hash_hex = response.get('hash', 'Unknown')
+                # Standard web3 transaction signing and sending
+                if self.private_key:
+                    # Get current nonce for the account
+                    account = self.web3.eth.account.from_key(self.private_key)
+                    address = account.address
+                    nonce = self.web3.eth.get_transaction_count(address)
+                    
+                    # Build transaction
+                    tx = self.roflswap.functions.executeMatch(
+                        int(match['buyOrderId']),
+                        int(match['sellOrderId']),
+                        buyer_address,
+                        seller_address,
+                        amount,
+                        price
+                    ).build_transaction({
+                        'chainId': self.web3.eth.chain_id,
+                        'gas': 700000,
+                        'gasPrice': self.web3.eth.gas_price,
+                        'nonce': nonce,
+                    })
+                    
+                    # Sign transaction
+                    signed_tx = self.web3.eth.account.sign_transaction(tx, self.private_key)
+                    
+                    # Send transaction
+                    tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+                    tx_hash_hex = tx_hash.hex()
                     print(f"Transaction successfully submitted: {tx_hash_hex}")
                     
                     # Wait for transaction to be included in a block
@@ -119,11 +120,11 @@ class SettlementEngine:
                             'error': "Transaction not confirmed after waiting"
                         })
                 else:
-                    print("Failed to submit transaction")
+                    print("No private key provided for transaction signing")
                     results.append({
                         'success': False,
                         'match': match,
-                        'error': "Failed to submit transaction"
+                        'error': "No private key provided for transaction signing"
                     })
                 
             except Exception as e:

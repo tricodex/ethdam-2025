@@ -5,7 +5,8 @@
       "name": "hardhat-project",
       "dependencies": {
         "@nomicfoundation/hardhat-ethers": "^3.0.8",
-        "ethers": "^6.11.1",
+        "@oasisprotocol/sapphire-contracts": "^0.2.14",
+        "ethers": "^6.14.0",
         "keccak256": "^1.0.6",
       },
       "devDependencies": {
@@ -157,6 +158,8 @@
     "@nomicfoundation/solidity-analyzer-win32-x64-msvc": ["@nomicfoundation/solidity-analyzer-win32-x64-msvc@0.1.2", "", {}, "sha512-Fdjli4DCcFHb4Zgsz0uEJXZ2K7VEO+w5KVv7HmT7WO10iODdU9csC2az4jrhEsRtiR9Gfd74FlG0NYlw1BMdyA=="],
 
     "@oasisprotocol/deoxysii": ["@oasisprotocol/deoxysii@0.0.6", "", {}, "sha512-TI51bIpChfsla9aRbjip6zvTbz6rpsqKgM7MqJvSfeFF6G5xLXQcbSC9u/1hOnOOazd7HaqA9NvaXQdeKCb3yw=="],
+
+    "@oasisprotocol/sapphire-contracts": ["@oasisprotocol/sapphire-contracts@0.2.14", "", { "dependencies": { "@openzeppelin/contracts": "^5.0.2" } }, "sha512-FYdJnHsnIBBME1Ggxc3pC1+NBa9HCaI/x4pDxSF2yBYbWvcFsd9M5+TJqP1BlZq6Z4D08v1+ahIcTzKF4YaGiw=="],
 
     "@oasisprotocol/sapphire-hardhat": ["@oasisprotocol/sapphire-hardhat@2.22.2", "", { "dependencies": { "@oasisprotocol/sapphire-paratime": "^2.0.1" }, "peerDependencies": { "hardhat": "2.x" } }, "sha512-43YYfsySrK/arbkurMd/AVOHpGwsZVvOrvQIS+TV8b56T0izLJuwe99Vou8U9GGiShBwFRuKl+J7pQWwvGWzPg=="],
 

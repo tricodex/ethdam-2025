@@ -1,23 +1,17 @@
 #!/usr/bin/env python3
-# Main entry point for the ROFLSwap ROFL application
+# Simplified Main entry point for the ROFLSwap order matching engine
 
 import json
 import time
 import os
+from web3 import Web3
 from matching_engine import MatchingEngine
 from settlement import SettlementEngine
 from storage import OrderStorage
-from rofl_integration import ensure_inside_rofl, register_periodic_task
 
-# Ensure this code runs in a TEE
-ensure_inside_rofl()
-
-# Configuration
+# Configuration from environment variables
 ROFLSWAP_ADDRESS = os.environ.get('ROFLSWAP_ADDRESS')
 WEB3_PROVIDER = os.environ.get('WEB3_PROVIDER', 'https://testnet.sapphire.oasis.io')
-
-# In a real ROFL app, we'd use the key management system
-# rather than passing a private key through an environment variable
 PRIVATE_KEY = os.environ.get('PRIVATE_KEY')
 
 # Make sure we have the required configuration
@@ -27,14 +21,14 @@ if not ROFLSWAP_ADDRESS:
 if not PRIVATE_KEY:
     raise ValueError("PRIVATE_KEY environment variable is required")
 
-print("Initializing ROFLSwap ROFL app...")
+print("Initializing ROFLSwap order matcher...")
 print(f"ROFLSwap contract address: {ROFLSWAP_ADDRESS}")
 print(f"Web3 provider: {WEB3_PROVIDER}")
 
 # Setup components
 matching_engine = MatchingEngine(ROFLSWAP_ADDRESS, WEB3_PROVIDER)
 settlement_engine = SettlementEngine(ROFLSWAP_ADDRESS, WEB3_PROVIDER, PRIVATE_KEY)
-storage = OrderStorage()
+storage = OrderStorage(storage_dir="./storage")
 
 def match_and_settle():
     """Main function to match orders and settle trades"""
@@ -77,10 +71,21 @@ def match_and_settle():
     
     print("Order matching cycle completed")
 
-# Run once immediately on startup
-match_and_settle()
-
-# Register the task to run periodically (e.g., every 60 seconds)
-register_periodic_task(match_and_settle, interval_seconds=60)
-
-print("ROFLSwap ROFL app initialized and running")
+if __name__ == "__main__":
+    # Run the matching cycle periodically
+    while True:
+        try:
+            match_and_settle()
+            
+            # Sleep for 60 seconds before the next cycle
+            print(f"Sleeping for 60 seconds until next matching cycle...")
+            time.sleep(60)
+            
+        except KeyboardInterrupt:
+            print("Stopping ROFLSwap order matcher")
+            break
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            time.sleep(60)  # Still wait before retrying

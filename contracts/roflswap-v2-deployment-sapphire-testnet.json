@@ -1,8 +1,0 @@
-{
-  "network": "sapphire-testnet",
-  "waterToken": "0xa24286675FCa7a93af65B25dD3895Fb0f273Ed6D",
-  "fireToken": "0xE987534F8E431c2D0F6DDa8D832d8ae622c77814",
-  "roflSwapV2": "0x552F5B746097219537F1041aA406c02F3474417A",
-  "roflAppId": "rofl1qqxpkwggyjaw6du7c2vzgdggwhjvjqp9tvqzkag3",
-  "deploymentTime": "2025-05-09T19:49:23.840Z"
-}
