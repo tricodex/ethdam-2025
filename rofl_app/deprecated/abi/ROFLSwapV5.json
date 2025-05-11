@@ -1,0 +1,82 @@
+{
+  "abi": [
+    {
+      "inputs": [],
+      "name": "getTotalOrderCount",
+      "outputs": [{"type": "uint256", "name": ""}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{"type": "uint256", "name": "orderId"}],
+      "name": "getEncryptedOrder",
+      "outputs": [{"type": "bytes", "name": ""}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{"type": "uint256", "name": "orderId"}],
+      "name": "getOrderOwner",
+      "outputs": [{"type": "address", "name": ""}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{"type": "address", "name": "user"}],
+      "name": "getUserOrders",
+      "outputs": [{"type": "uint256[]", "name": ""}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{"type": "uint256", "name": "orderId"}],
+      "name": "orderExists",
+      "outputs": [{"type": "bool", "name": ""}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{"type": "uint256", "name": "orderId"}],
+      "name": "filledOrders",
+      "outputs": [{"type": "bool", "name": ""}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "roflAppId",
+      "outputs": [{"type": "bytes21", "name": ""}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "oracle",
+      "outputs": [{"type": "address", "name": ""}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{"type": "address", "name": "addr"}],
+      "name": "setOracle",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {"type": "uint256", "name": "buyOrderId"},
+        {"type": "uint256", "name": "sellOrderId"},
+        {"type": "address", "name": "buyerAddress"},
+        {"type": "address", "name": "sellerAddress"},
+        {"type": "address", "name": "token"},
+        {"type": "uint256", "name": "amount"},
+        {"type": "uint256", "name": "price"}
+      ],
+      "name": "executeMatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ]
+}

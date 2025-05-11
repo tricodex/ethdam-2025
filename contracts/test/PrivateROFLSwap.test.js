@@ -1,6 +1,10 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+
+// Use an alternative way to load fixtures without using hardhat-toolbox
+async function loadFixture(deployFn) {
+  return deployFn();
+}
 
 describe("ROFLSwapV5 with PrivateERC20", function() {
   // Deploy the contracts once and reuse them in multiple tests
@@ -53,7 +57,7 @@ describe("ROFLSwapV5 with PrivateERC20", function() {
     await privateFireToken.waitForDeployment();
     
     // Create a placeholder ROFL app ID
-    const roflAppId = ethers.toUtf8Bytes("rofl1qqxpkwggyjaw6du7c2vzgdggwhjvjqp9tvqzkag3");
+    const roflAppId = ethers.toUtf8Bytes("rofl1qzd2jxyr5lujtkdnkpf9xuh8dktu73nl5q7cp972");
     
     // Deploy ROFLSwapV5 contract
     const ROFLSwapV5 = await ethers.getContractFactory("ROFLSwapV5");

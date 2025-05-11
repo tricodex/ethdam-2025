@@ -1,13 +1,17 @@
+version: '3'
+
 services:
   roflswap-matcher:
-    build: .
-    image: "ghcr.io/your-username/roflswap-matcher:latest"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/oasisprotocol/roflswap-matcher:latest
     platform: linux/amd64
+    restart: always
     environment:
-      - PRIVATE_KEY=${PRIVATE_KEY}
-      - ROFLSWAP_ADDRESS=${ROFLSWAP_ADDRESS}
-      - WEB3_PROVIDER=${WEB3_PROVIDER}
-      - ROFL_APP_ID=${ROFL_APP_ID}
+      - ROFLSWAP_ADDRESS=0x1bc94B51C5040E7A64FE5F42F51C328d7398969e
+      - POLLING_INTERVAL=30
     volumes:
       - /run/rofl-appd.sock:/run/rofl-appd.sock
       - ./storage:/app/storage
+    command: --contract 0x1bc94B51C5040E7A64FE5F42F51C328d7398969e --interval 30

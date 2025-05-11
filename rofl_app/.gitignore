@@ -152,3 +152,71 @@ rofl_app.default.orc
 OASIS_COMMANDS.md
 
 rofl_app.default.orc
+roflswap-order-matcher.default.orc
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs
+*.log
+logs/
+storage/
+
+# Virtual environment
+venv/
+ENV/
+env/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+.DS_Store
+
+# Local development
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary files
+*.manifest
+*.spec
+*.tmp
+*.bak
+
+# Database files
+db.sqlite3
+local_settings.py
+
+# Windows
+ehthumbs.db
+Thumbs.db
+
+# Project-specific files
+OASIS_COMMANDS.md
+
+rofl_app.default.orc
+roflswap-order-matcher.default.orc

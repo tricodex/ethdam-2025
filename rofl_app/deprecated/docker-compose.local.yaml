@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  roflswap-matcher-local:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    image: roflswap-matcher-local
+    container_name: roflswap-matcher-local
+    volumes:
+      - ./storage:/app/storage
+    environment:
+      - WEB3_PROVIDER=${WEB3_PROVIDER:-https://testnet.sapphire.oasis.io}
+      - ROFLSWAP_ADDRESS=${ROFLSWAP_ADDRESS:-0x1bc94B51C5040E7A64FE5F42F51C328d7398969e}
+      - PRIVATE_KEY=${PRIVATE_KEY}
+      - POLLING_INTERVAL=5
+    command: --local --debug --interval 5 

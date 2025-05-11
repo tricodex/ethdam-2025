@@ -1,0 +1,10 @@
+{
+  "balanceRegistry": "0x2a109409a9a3c5A51a8644c374ddd84DF7b44C80",
+  "baseWaterToken": "0x96c5F50000dE0B12CBa648eAfAab818aBCadAaA4",
+  "baseFireToken": "0xf2b3B8BE27A7712e06eEA16175cC8BacC6980f5C",
+  "privateWaterToken": "0x991a85943D05Abcc4599Fc8746188CCcE4019F04",
+  "privateFireToken": "0x8AE7cCe3D249F31b2D2db54aD2eBf1Ba2E30a977",
+  "deployer": "0x9Ac44C807FfcAf3e150e184a06a660EaE5b848C8",
+  "network": "sapphire-testnet",
+  "timestamp": "2025-05-10T19:45:06.682Z"
+}

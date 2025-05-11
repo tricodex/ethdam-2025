@@ -1,6 +1,12 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "./tasks";
 import "./tasks/deploy-v4";
+import "./tasks/deploy-v5";
+import "./tasks/place-order-v5";
+import "./tasks/wrap-tokens-v5";
+import "./tasks/request-privacy-v5";
+import "./tasks/deploy-v4-compatible";
+import "./tasks/oracle-tasks";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-ethers";
 import "@oasisprotocol/sapphire-hardhat";
@@ -19,7 +25,7 @@ const accounts = PRIVATE_KEY ? [PRIVATE_KEY] : {
 };
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.28",
+  solidity: "0.8.30",
   networks: {
     // Sapphire mainnet
     sapphire: {

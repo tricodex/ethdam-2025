@@ -1,0 +1,34 @@
+Migration started at Sun May 11 01:19:43 CEST 2025
+Files moved to deprecated folder:
+✓ matching_engine.py
+✓ settlement.py
+✓ order_serialization.py
+✓ storage.py
+✓ sapphire_wrapper.py
+✓ abi/ROFLSwapV3.json
+✓ abi/ROFLSwapV4.json
+✓ abi/ROFLSwapV5.json
+✓ debug_contract_access.py
+✓ check_rofl_app_id.py
+✓ fix_authentication.py
+✓ test_contract_authentication.py
+✓ set_matcher_key.sh
+✓ fix_roflswap_matcher.md
+✓ CORRECT_SETUP.md
+
+Files NOT moved (may still be needed or already migrated):
+- roflswap_oracle.py - Core of new implementation
+- rofl_auth.py - New ROFL authentication
+- main.py - Entry point using new oracle pattern
+- compose.yaml - Container configuration
+- Dockerfile - Container definition
+- rofl.yaml - ROFL app manifest
+- requirements.txt - Dependencies
+- abi/ROFLSwapOracle.json - New contract ABI
+- abi/PrivateERC20.json - Token implementation
+- abi/FireToken.json - Token ABI
+- abi/WaterToken.json - Token ABI
+- roflswap_oracle_matching.py - (Retain, likely part of new implementation)
+- roflswap_processor.py - (Retain, check if still used)
+
+Migration completed at Sun May 11 01:19:43 CEST 2025

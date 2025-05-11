@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import "./custom/CustomOwnable.sol";
-import "./PrivateWrapper.sol";
 import "./ERC2771Context.sol";
 
 contract ConfidentialBalanceRegistry is ERC2771Context, AccessControl, CustomOwnable {

@@ -1,0 +1,89 @@
+flowchart TB
+    %% Style definitions
+    classDef userSide fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef consensusSide fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef teeSide fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef roflSide fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    classDef dataFlow fill:#f5f5f5,stroke:#616161,stroke-width:1px,stroke-dasharray: 5 5
+    classDef stateStorage fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    %% User/Client side
+    subgraph Client ["User/Client Side"]
+        Wallet["User Wallet<br>(with Sapphire Wrapper)"]
+        KeyPair["User Key Pair<br>(for E2E encryption)"]
+        TX["Transaction Data<br>(token transfer, contract call, etc.)"]
+        
+        Wallet -- "Creates" --> TX
+        KeyPair -- "Used for<br>Encryption" --> TX
+    end
+    
+    %% Oasis Network Consensus Layer
+    subgraph Consensus ["Oasis Network Consensus"]
+        ConNode["Consensus Nodes"]
+        BlockProp["Block Proposal &<br>Validation"]
+        
+        ConNode -- "Process" --> BlockProp
+    end
+    
+    %% Sapphire ParaTime
+    subgraph Sapphire ["Sapphire ParaTime"]
+        subgraph TEE ["Trusted Execution Environment (TEE)"]
+            TXDec["Transaction<br>Decryption"]
+            ContExec["Smart Contract<br>Execution"]
+            StateEnc["State<br>Encryption"]
+            RespEnc["Response<br>Encryption"]
+            
+            TXDec --> ContExec
+            ContExec --> StateEnc
+            ContExec --> RespEnc
+        end
+        
+        subgraph Storage ["Encrypted Storage"]
+            EncState["Encrypted<br>Contract State"]
+        end
+        
+        TEE -- "Writes to" --> Storage
+        Storage -- "Reads from" --> TEE
+    end
+    
+    %% ROFL App (optional extension)
+    subgraph ROFL ["ROFL App (Runtime Off-chain Logic)"]
+        subgraph ROFL_TEE ["ROFL TEE"]
+            AppReg["App Registration<br>& Attestation"]
+            LightClient["Light Client<br>(Blockchain View)"]
+            OffChainComp["Off-chain<br>Computation"]
+            ExtAPI["External API<br>Integration"]
+            AuthTX["Authenticated<br>Transaction"]
+            KeyMgmt["Decentralized<br>Key Management"]
+            SecretStore["Encrypted<br>Secret Storage"]
+            
+            AppReg --> LightClient
+            LightClient --> OffChainComp
+            OffChainComp --> ExtAPI
+            OffChainComp --> AuthTX
+            KeyMgmt -- "Provides keys" --> OffChainComp
+            SecretStore -- "Provides secrets" --> OffChainComp
+        end
+    end
+    
+    %% Connections between components
+    TX -- "1. Encrypted<br>Transaction" --> ConNode
+    BlockProp -- "2. Routes to<br>ParaTime" --> TXDec
+    RespEnc -- "6. Encrypted<br>Response" --> Wallet
+    
+    %% Optional ROFL connections
+    ContExec -. "7. Call ROFL<br>(optional)" .-> AppReg
+    AuthTX -. "8. Authenticated<br>Transaction" .-> ConNode
+    ExtAPI -. "9. External API<br>Calls" .-> ExternalSvcs["External<br>Services"]
+    
+    %% Apply styles
+    class Client userSide
+    class Wallet,KeyPair,TX userSide
+    class Consensus consensusSide
+    class ConNode,BlockProp consensusSide
+    class Sapphire,TEE teeSide
+    class TXDec,ContExec,StateEnc,RespEnc teeSide
+    class Storage,EncState stateStorage
+    class ROFL,ROFL_TEE roflSide
+    class AppReg,LightClient,OffChainComp,ExtAPI,AuthTX,KeyMgmt,SecretStore roflSide
+    class ExternalSvcs dataFlow

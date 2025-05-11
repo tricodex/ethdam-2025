@@ -2,6 +2,16 @@
 
 This guide provides detailed instructions for integrating ROFLSwap with Confidential ERC20 tokens using Oasis Protocol's ROFL (Runtime Off-chain Logic) and Sapphire TEE (Trusted Execution Environment).
 
+## Current Deployment
+
+The system is currently deployed on Sapphire Testnet with the following addresses:
+
+- **ROFLSwapV5**: `0x5374c5161a408C77A1Fcd934B55adae7e1bd42AB`
+- **ConfidentialBalanceRegistry**: `0x2a109409a9a3c5A51a8644c374ddd84DF7b44C80`
+- **Private WATER Token**: `0x991a85943D05Abcc4599Fc8746188CCcE4019F04`
+- **Private FIRE Token**: `0x8AE7cCe3D249F31b2D2db54aD2eBf1Ba2E30a977`
+- **ROFL App ID**: `rofl1qzd2jxyr5lujtkdnkpf9xuh8dktu73nl5q7cp972`
+
 ## Overview
 
 ROFLSwapV5 is an enhancement to the original ROFLSwap dark pool that adds support for fully confidential token transfers using PrivateERC20 tokens. This creates a completely private decentralized exchange where:
@@ -23,6 +33,25 @@ The system consists of the following components:
 4. **ROFLSwapV5**: Exchange contract that integrates with private tokens
 5. **ROFL Application**: Trusted off-chain order matching and settlement executed in TEE
 
+## ROFL App ID Synchronization
+
+One of the key security features of ROFLSwapV5 is the `roflEnsureAuthorizedOrigin` check, which verifies that critical functions can only be called by the authorized ROFL app. This requires:
+
+1. The contract must be deployed with the exact same ROFL app ID that is registered on-chain
+2. If you create a new ROFL app or the app ID changes, you must redeploy the contract
+
+### Deploying with the Correct ROFL App ID
+
+```bash
+# Check your current ROFL app ID
+cd rofl_app
+oasis rofl show
+
+# Deploy with the correct app ID
+cd ../contracts
+bun hardhat run scripts/deploy-roflswap-v5-with-new-appid.js --network sapphire-testnet
+```
+
 ## Deployment Process
 
 ### Step 1: Deploy the BalanceRegistry
@@ -30,7 +59,7 @@ The system consists of the following components:
 The BalanceRegistry is the core component that tracks token ownership with privacy controls:
 
 ```bash
-npx hardhat run scripts/deploy-balance-registry.js --network sapphire-testnet
+bun hardhat run scripts/deploy-balance-registry.js --network sapphire-testnet
 ```
 
 This will deploy the registry and save the address in a deployment file.
@@ -40,7 +69,7 @@ This will deploy the registry and save the address in a deployment file.
 You can either deploy new PrivateERC20 tokens or wrap existing ones:
 
 ```bash
-npx hardhat run scripts/deploy-private-tokens.js --network sapphire-testnet
+bun hardhat run scripts/deploy-private-tokens.js --network sapphire-testnet
 ```
 
 This will deploy PrivateWrapper contracts for WATER and FIRE tokens and save the addresses.
@@ -50,40 +79,118 @@ This will deploy PrivateWrapper contracts for WATER and FIRE tokens and save the
 Deploy the exchange contract that supports PrivateERC20 tokens:
 
 ```bash
-npx hardhat run scripts/deploy-roflswap-v5.js --network sapphire-testnet --rofl-app-id your_rofl_app_id
+bun hardhat run scripts/deploy-roflswap-v5-with-new-appid.js --network sapphire-testnet
 ```
 
-This will deploy the ROFLSwapV5 contract with the private tokens and request privacy access.
+After deployment, request privacy access:
+
+```bash
+bun hardhat request-privacy:v5 --contract 0x5374c5161a408C77A1Fcd934B55adae7e1bd42AB --network sapphire-testnet
+```
 
 ### Step 4: Update ROFL App
 
-Update the ROFL app to use the new contract and support PrivateERC20:
+Update the ROFL app with the necessary secrets:
 
-1. Update the ROFL app configuration with the new contract address:
-   ```bash
-   oasis rofl update --network testnet --account myaccount
-   ```
+```bash
+cd ../rofl_app
 
-2. Update the ROFL app code to use the enhanced matching and settlement logic:
-   ```bash
-   cd rofl_app
-   # Update the code with the new contract address
-   # See matching_engine_v5.py and settlement_v5.py
-   ```
+# Set ROFLSwapV5 contract address
+echo -n "0x5374c5161a408C77A1Fcd934B55adae7e1bd42AB" | oasis rofl secret set ROFLSWAP_ADDRESS -
+
+# Set ROFL App ID
+echo -n "rofl1qzd2jxyr5lujtkdnkpf9xuh8dktu73nl5q7cp972" | oasis rofl secret set ROFL_APP_ID -
+
+# Set Web3 Provider URL
+echo -n "https://testnet.sapphire.oasis.io" | oasis rofl secret set WEB3_PROVIDER -
+
+# Update and restart
+oasis rofl update --account myaccount
+oasis rofl machine restart
+```
 
 ## Token Approvals Process
 
 For ROFLSwapV5 to work properly, users need to:
 
 1. Wrap their base tokens into private tokens:
-   ```
-   npx hardhat run scripts/wrap-tokens.js --network sapphire-testnet --token water --amount 100
+   ```bash
+   bun hardhat wrap:v5 --token water --amount 100 --network sapphire-testnet
    ```
 
 2. Approve the ROFLSwapV5 contract to spend their private tokens:
+   ```bash
+   bun hardhat approve:v5 --token water --network sapphire-testnet
    ```
-   npx hardhat run scripts/approve-private-tokens.js --network sapphire-testnet --token water --amount 100
-   ```
+
+## Testing the TEE Order Matcher
+
+To ensure that the TEE order matching functionality is working correctly, we've created a comprehensive set of testing scripts.
+
+### Automated Testing Workflow
+
+The easiest way to test is to use our automated testing workflow:
+
+```bash
+# Set environment variables for buyer and seller
+export PRIVATE_KEY=your_buyer_private_key_here
+export PRIVATE_KEY_SELLER=your_seller_private_key_here
+
+# Run the testing workflow
+cd contracts
+./scripts/test-order-matching-workflow.sh
+```
+
+This script performs the following steps:
+1. Checks the ROFL app status and configuration
+2. Prepares accounts by minting and wrapping tokens
+3. Places matching buy and sell orders
+4. Verifies if the matching was successful
+
+### Checking ROFL App Status
+
+To diagnose potential TEE issues, you can use the app status checker:
+
+```bash
+cd contracts
+bun hardhat run scripts/check-rofl-app-status.js --network sapphire-testnet
+```
+
+This tool checks:
+- If the ROFL app ID matches the deployment configuration
+- If the ROFL machine is running properly
+- If all required secrets are set correctly
+- Provides troubleshooting advice for common issues
+
+### Preparing Test Accounts
+
+To prepare accounts with tokens for testing:
+
+```bash
+cd contracts
+bun hardhat run scripts/prepare-accounts-for-testing.js --network sapphire-testnet
+```
+
+This script:
+- Mints base tokens for both accounts
+- Wraps tokens into their private versions 
+- Checks balances to ensure they're sufficient for testing
+
+### Testing Order Matching
+
+To specifically test the order matching functionality:
+
+```bash
+cd contracts
+bun hardhat run scripts/test-tee-order-matching.js --network sapphire-testnet
+```
+
+This script:
+- Places a buy order from one account
+- Places a matching sell order from another account
+- Waits for the TEE to process the matching
+- Checks if the balances changed, indicating successful matching
+- Provides detailed diagnostic information if matching fails
 
 ## Order Serialization Format
 
@@ -117,67 +224,68 @@ def decode_order(encoded_data):
 
 ## Running the ROFL App
 
-The enhanced ROFL app (main_v5.py) can be run as follows:
+The ROFL app runs in a Trusted Execution Environment (TEE) on the Oasis network:
 
 ```bash
-# Set required environment variables
-export ROFLSWAP_ADDRESS="0x..."
-export PRIVATE_KEY="0x..."
-export ROFL_APP_ID="rofl1..."
-
-# Run the app
-python main_v5.py
+# Check if the app is running
+oasis rofl show
+oasis rofl machine show
 ```
 
-This will:
-1. Load orders from the contract
-2. Find matches based on price and token
-3. Check token approvals for each match
-4. Execute matches that have proper approvals
-
-## Testing the Integration
-
-A comprehensive test suite is provided in `test/PrivateROFLSwap.test.js`:
-
-```bash
-npx hardhat test test/PrivateROFLSwap.test.js
-```
-
-For testing on a live network:
-
-1. Deploy the contracts
-2. Place test orders:
-   ```bash
-   npx hardhat run scripts/place-private-order.js --network sapphire-testnet --buy --token [TOKEN_ADDRESS] --price 1 --size 10
-   ```
-3. Run the ROFL app in test mode:
-   ```bash
-   python main_v5.py --once
-   ```
+The app automatically:
+1. Loads orders from the contract
+2. Finds matches based on price and token
+3. Executes matches that have proper approvals
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Token Approval Failures**: Check allowances and ensure users have approved the ROFLSwapV5 contract.
+1. **ROFL App ID Mismatch**: If the contract was deployed with a different ROFL app ID than the registered one, the `roflEnsureAuthorizedOrigin` check will fail. Redeploy the contract with the correct ID.
 
-2. **Order Deserialization Errors**: Verify the order encoding format matches between client and ROFL app.
+2. **Token Approval Failures**: Check allowances and ensure users have approved the ROFLSwapV5 contract.
 
-3. **TEE Decryption Mechanism**: The ROFL app automatically handles decryption when running in the TEE environment.
+3. **Order Deserialization Errors**: Verify the order encoding format matches between client and ROFL app.
 
-4. **Permission Model**: Ensure the ROFLSwapV5 contract has requested access to private tokens via `requestPrivacyAccess()`.
+4. **TEE Decryption Mechanism**: The ROFL app automatically handles decryption when running in the TEE environment.
 
-### Debugging Tools
+5. **Permission Model**: Ensure the ROFLSwapV5 contract has requested access to private tokens via `requestPrivacyAccess()`.
 
-- Check token approvals:
-  ```bash
-  npx hardhat run scripts/check-approvals.js --network sapphire-testnet
-  ```
+6. **ROFL Machine Not Running**: Check if the ROFL machine is stopped and restart it with `oasis rofl machine restart`.
 
-- Inspect order data:
-  ```bash
-  python inspect_order.py --contract [ADDRESS] --order-id 1
-  ```
+7. **Missing or Incorrect Secrets**: Verify all required secrets are set with `oasis rofl secret list`.
+
+### Diagnosing TEE Issues
+
+When the TEE order matcher doesn't seem to be working:
+
+1. Run the comprehensive status checker:
+   ```bash
+   bun hardhat run scripts/check-rofl-app-status.js --network sapphire-testnet
+   ```
+
+2. Check the ROFL app logs (if available):
+   ```bash
+   oasis rofl logs
+   ```
+
+3. Verify that orders are being properly placed:
+   ```bash
+   # Connect to the console
+   bun hardhat console --network sapphire-testnet
+   
+   # In the console
+   const ROFLSwapV5 = await ethers.getContractFactory("ROFLSwapV5");
+   const roflSwap = ROFLSwapV5.attach("0x5374c5161a408C77A1Fcd934B55adae7e1bd42AB");
+   const orderCount = await roflSwap.getOrderCount();
+   console.log(`Order count: ${orderCount}`);
+   ```
+
+4. If necessary, update the ROFL machine and restart:
+   ```bash
+   oasis rofl update --account myaccount
+   oasis rofl machine restart
+   ```
 
 ## Security Considerations
 
@@ -186,6 +294,8 @@ For testing on a live network:
 2. **TEE Security**: Remember that the security model relies on the integrity of the TEE implementation.
 
 3. **Approval Risks**: Users should be cautious about unlimited token approvals.
+
+4. **ROFL App ID Validation**: The contract's `roflEnsureAuthorizedOrigin` check provides an important security guarantee that only the authorized ROFL app can trigger sensitive operations.
 
 ## Next Steps
 
@@ -197,4 +307,4 @@ For testing on a live network:
 
 4. Add multi-hop order routing for complex trades
 
-For more information, refer to the Oasis documentation on ROFL and Sapphire.
+For more information, refer to the Oasis documentation on ROFL and Sapphire. 

@@ -1,0 +1,13 @@
+{
+  "roflSwapOracle": "0x1bc94B51C5040E7A64FE5F42F51C328d7398969e",
+  "privateWaterToken": "0x991a85943D05Abcc4599Fc8746188CCcE4019F04",
+  "privateFireToken": "0x8AE7cCe3D249F31b2D2db54aD2eBf1Ba2E30a977",
+  "waterToken": "0x96c5F50000dE0B12CBa648eAfAab818aBCadAaA4",
+  "fireToken": "0xf2b3B8BE27A7712e06eEA16175cC8BacC6980f5C",
+  "roflAppId": "rofl1qzd2jxyr5lujtkdnkpf9xuh8dktu73nl5q7cp972",
+  "initialOracle": "0xF449C755DEc0FA9c655869A3D8D89fb2cCC399e6",
+  "siweDomain": "sapphire-testnet.oasis.io",
+  "deployer": "0xF449C755DEc0FA9c655869A3D8D89fb2cCC399e6",
+  "network": "sapphire-testnet",
+  "timestamp": "2025-05-10T23:06:57.834Z"
+}
