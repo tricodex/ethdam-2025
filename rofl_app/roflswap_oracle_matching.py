@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-ROFLSwap Matcher Oracle Service
+ROFLSwap Oracle Matching Service
 
-This script implements the order matching logic for ROFLSwapOracle, communicating
-with the smart contract through the ROFL app daemon socket interface.
+This script handles order matching for the ROFLSwapOracle contract deployed
+on Oasis Sapphire. It retrieves orders from the contract, processes them for matching,
+and executes matches using the ROFLSwapOracle contract's executeMatch method.
+
+This is specifically designed for the ROFLSwapOracle contract (not ROFLSwapV5).
 """
 
 import os
@@ -21,6 +24,8 @@ from typing import List, Dict, Any, Tuple, Optional
 from web3 import Web3
 from eth_account import Account
 from eth_abi import decode, encode
+from web3.middleware import construct_sign_and_send_raw_middleware
+from eth_account.signers.local import LocalAccount
 
 # Import ROFL utility
 from rofl_app.rofl_auth import RoflUtility

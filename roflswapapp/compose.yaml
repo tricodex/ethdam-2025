@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  roflswap-matcher:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/tricodex/roflswap-matcher:0.1.2
+    platform: linux/amd64
+    restart: always
+    environment:
+      - ROFLSWAP_ADDRESS=0x71b419f2Abe5f1d44246143706489A5F09Ee3727
+      - WEB3_PROVIDER=https://testnet.sapphire.oasis.io
+      - POLLING_INTERVAL=10
+      - ROFL_APP_ID=rofl1qzd2jxyr5lujtkdnkpf9xuh8dktu73nl5q7cp972
+    volumes:
+      - /run/rofl-appd.sock:/run/rofl-appd.sock

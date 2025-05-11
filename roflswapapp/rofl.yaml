@@ -1,0 +1,39 @@
+name: roflswap-order-matcher
+version: 0.1.2
+description: ROFLSwap Order Matching Engine for Oasis Sapphire
+tee: tdx
+kind: container
+resources:
+  memory: 2048
+  cpus: 2
+  storage:
+    kind: disk-persistent
+    size: 1024
+deployments:
+  default:
+    app_id: rofl1qzd2jxyr5lujtkdnkpf9xuh8dktu73nl5q7cp972
+    network: testnet
+    paratime: sapphire
+    admin: myaccount
+    oci_repository: rofl.sh/22ac66ad-fa26-4579-b578-98493884c452:1746944984
+    trust_root:
+      height: 26537312
+      hash: 4e9d025c317974fbabe6ec5031dd40f6d3e5be98b9ea1a1ba3e9bb2a14365c66
+    policy:
+      quotes:
+        pcs:
+          tcb_validity_period: 30
+          min_tcb_evaluation_data_number: 18
+          tdx: {}
+      enclaves:
+        - id: HcIivLhNnRmLSUu8t5Wi6FBnRFB6J3hMXlhxyqKiKJcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+        - id: Zl4A15V8EKGzDVtLaXITokXv6HBg6zTA3TXE/8CnHhIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+      endorsements:
+        - any: {}
+      fees: endorsing_node
+      max_expiration: 3
+    machines:
+      default:
+        provider: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
+        offer: playground_short
+        id: 000000000000007f

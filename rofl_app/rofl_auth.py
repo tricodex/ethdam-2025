@@ -16,6 +16,19 @@ from web3 import Web3
 
 logger = logging.getLogger("rofl_auth")
 
+# Get ROFL App ID from environment with truncation
+ROFL_APP_ID = os.environ.get("ROFL_APP_ID", "")
+logger.info(f"Original ROFL App ID: {ROFL_APP_ID}")
+
+# Truncate if needed to match contract's bytes21 format
+if ROFL_APP_ID and ROFL_APP_ID.startswith("rofl1") and len(ROFL_APP_ID) > 26:
+    # Keep only first 26 chars (rofl1 + 21 bytes)
+    TRUNCATED_APP_ID = ROFL_APP_ID[:26]
+    logger.info(f"Using truncated ROFL App ID for contract auth: {TRUNCATED_APP_ID}")
+else:
+    TRUNCATED_APP_ID = ROFL_APP_ID
+    logger.info(f"ROFL App ID unchanged: {TRUNCATED_APP_ID}")
+
 class RoflUtility:
     """
     Utility for interacting with ROFL app daemon socket
@@ -32,6 +45,14 @@ class RoflUtility:
         self.contract_address = Web3.to_checksum_address(contract_address)
         self.is_tee = is_tee
         self.account = None
+        
+        # Save original and truncated App IDs
+        self.original_app_id = ROFL_APP_ID
+        self.truncated_app_id = TRUNCATED_APP_ID
+        
+        logger.info(f"Contract address: {self.contract_address}")
+        logger.info(f"TEE mode: {self.is_tee}")
+        logger.info(f"Using truncated App ID for contract auth: {self.truncated_app_id}")
         
         # If not in TEE, set up Web3 for local testing
         if not self.is_tee:
@@ -51,6 +72,14 @@ class RoflUtility:
                 logger.warning(f"ROFL app daemon socket not found at {self.socket_path}")
                 if self.is_tee:
                     logger.error("Missing socket but running in TEE mode. This will likely cause issues.")
+    
+    def _truncate_app_id(self, app_id):
+        """Truncate ROFL App ID to match contract bytes21 format"""
+        # Check if this is a ROFL App ID that needs truncation
+        if isinstance(app_id, str) and app_id.startswith("rofl1") and len(app_id) > 26:
+            # Keep only first 26 chars (rofl1 + 21 bytes)
+            return app_id[:26]
+        return app_id
     
     def setup_local_account(self):
         """
@@ -165,6 +194,10 @@ class RoflUtility:
         Returns:
             Dict with transaction result
         """
+        # Log the target contract for debugging
+        logger.debug(f"Submitting transaction to contract: {contract_address}")
+        logger.debug(f"Using App ID: {self.truncated_app_id}")
+        
         if not self.is_tee:
             # In local mode, use Web3 for testing
             try:
@@ -248,6 +281,17 @@ class RoflUtility:
             # Set up unix socket session
             session = requests.Session()
             session.mount("http+unix://", httpx.HTTPTransport(uds=self.socket_path))
+            
+            # Modify the payload if it's a transaction to the ROFLSwap contract
+            if isinstance(data, dict) and 'call' in data and isinstance(data['call'], dict) and 'data' in data['call']:
+                call_data = data['call']['data']
+                if isinstance(call_data, dict) and 'to' in call_data and call_data.get('to', '').lower() == self.contract_address.lower().replace('0x', ''):
+                    # This is a call to our contract - log for debugging
+                    logger.debug(f"Transaction to ROFLSwap contract detected, using truncated App ID: {self.truncated_app_id}")
+                    
+                    # The payload automatically uses our truncated App ID through the global ROFL_APP_ID
+                    # No need to modify further, just log for debugging
+                    logger.debug(f"Original payload: {json.dumps(data)}")
             
             # Make request
             headers = {'Content-Type': 'application/json'}

@@ -1,5 +1,5 @@
 name: roflswap-order-matcher
-version: "0.1.1"
+version: 0.1.1
 description: ROFLSwap Order Matching Engine for Oasis Sapphire - Debug Version
 tee: tdx
 kind: container
@@ -45,4 +45,4 @@ deployments:
       default:
         provider: oasis1qp2ens0hsp7gh23wajxa4hpetkdek3swyyulyrmz
         offer: playground_short
-        id: "0000000000000069"
+        id: 000000000000006d

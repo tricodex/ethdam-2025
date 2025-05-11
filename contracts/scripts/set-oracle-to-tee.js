@@ -1,71 +1,95 @@
-// Script to update the Oracle address with a transaction from inside the TEE
-// This implementation will first deploy a new ROFL machine session and then update the contract
+#!/usr/bin/env node
+
+// set-oracle-to-tee.js - Script to set the oracle address to the current TEE environment
+// Run with: bun set-oracle-to-tee.js
+
 const hre = require("hardhat");
 const { ethers } = require("hardhat");
-const { execSync } = require("child_process");
+const fs = require("fs");
+
+// ROFLSwapOracle ABI for the setOracle function
+const ROFLSwapOracleABI = [
+  "function setOracle(address addr)",
+  "function oracle() view returns (address)"
+];
 
 async function main() {
-  console.log("\n=== SETTING ORACLE TO MATCH TEE IDENTITY ===\n");
+  console.log("Setting oracle address to current TEE environment address...");
+
+  // Get network
+  const network = hre.network.name;
+  console.log(`Network: ${network}`);
   
-  // Get signers
+  // Load deployment data to get the contract address
+  let roflSwapOracleAddress;
+  
+  try {
+    const deploymentFile = `./roflswap-oracle-deployment-${network}.json`;
+    const deploymentData = JSON.parse(fs.readFileSync(deploymentFile));
+    roflSwapOracleAddress = deploymentData.roflSwapOracle;
+    console.log(`ROFLSwapOracle: ${roflSwapOracleAddress}`);
+  } catch (error) {
+    console.error("Failed to load deployment information:", error.message);
+    
+    // Fall back to command line argument or environment variable
+    roflSwapOracleAddress = process.argv[2] || process.env.ROFLSWAP_ORACLE_ADDRESS;
+    
+    if (!roflSwapOracleAddress) {
+      console.error("Error: ROFLSwapOracle contract address not provided.");
+      console.error("Usage: bun set-oracle-to-tee.js <contract_address>");
+      console.error("Or set ROFLSWAP_ORACLE_ADDRESS environment variable");
+      process.exit(1);
+    }
+  }
+  
+  // Get the TEE address (signer address)
   const [signer] = await ethers.getSigners();
-  console.log(`Using account: ${signer.address}`);
-  
-  // Network info
-  const networkName = hre.network.name;
-  console.log(`Using network: ${networkName}`);
-  
-  // Contract information
-  const roflSwapOracleAddress = "0x1bc94B51C5040E7A64FE5F42F51C328d7398969e";
-  console.log(`ROFLSwapOracle address: ${roflSwapOracleAddress}`);
+  const teeAddress = signer.address;
+  console.log(`TEE Environment Address: ${teeAddress}`);
   
   // Get the contract instance
-  const oracle = await ethers.getContractAt("ROFLSwapOracle", roflSwapOracleAddress);
+  const roflSwapOracle = new ethers.Contract(
+    roflSwapOracleAddress,
+    ROFLSwapOracleABI,
+    signer
+  );
   
-  // Get current oracle address and ROFL app ID
-  const currentOracle = await oracle.oracle();
-  const currentAppID = await oracle.roflAppID();
+  // Get current oracle address
+  const currentOracle = await roflSwapOracle.oracle();
+  console.log(`Current Oracle Address: ${currentOracle}`);
   
-  console.log(`Current Oracle address: ${currentOracle}`);
-  console.log(`Current ROFL App ID (hex): ${currentAppID}`);
-  
-  // Convert app ID from hex to readable format
-  let appIdAscii = "";
-  for (let i = 2; i < currentAppID.length; i += 2) {
-    appIdAscii += String.fromCharCode(parseInt(currentAppID.substr(i, 2), 16));
+  if (currentOracle === teeAddress) {
+    console.log("Oracle address is already set to the TEE environment address.");
+    process.exit(0);
   }
-  console.log(`Current App ID decoded: ${appIdAscii}`);
   
-  console.log("\nTo fix the oracle permission issue, we need to:");
-  console.log("1. Run a command in the TEE that signs a transaction setting itself as the oracle");
-  console.log("2. This will grant the oracle inside the TEE permissions to access orders");
-  console.log("");
-  console.log("To do this, we need to run an oasis rofl session that calls our contract");
-  console.log("Use the following steps:");
-  console.log("");
-  console.log("1. Open a terminal and run: cd ../rofl_app");
-  console.log("2. Run: oasis rofl session shell");
-  console.log("3. In the session shell, run a Python script to register the TEE's account:");
-  console.log("");
-  console.log("```python");
-  console.log("import os");
-  console.log("from web3 import Web3");
-  console.log("from eth_account import Account");
-  console.log("from rofl_app.rofl_auth import RoflUtility");
-  console.log("");
-  console.log("# Get the oracle address inside the TEE");
-  console.log("private_key = os.environ.get('MATCHER_PRIVATE_KEY')");
-  console.log("if private_key:");
-  console.log("    account = Account.from_key(private_key)");
-  console.log("    print(f'Oracle address inside TEE: {account.address}')");
-  console.log("else:");
-  console.log("    print('No MATCHER_PRIVATE_KEY found')");
-  console.log("```");
-  console.log("");
-  console.log("4. Use that address to update the oracle in the contract");
-  console.log("5. Restart the ROFL machine: oasis rofl machine restart");
-  console.log("");
-  console.log("After these steps, your matcher should have permission to execute trades!");
+  console.log(`Setting oracle address to TEE environment address: ${teeAddress}`);
+  
+  try {
+    // Call setOracle function - this will only work if executed from the authorized ROFL app
+    const tx = await roflSwapOracle.setOracle(teeAddress);
+    console.log(`Transaction hash: ${tx.hash}`);
+    await tx.wait();
+    console.log("Transaction confirmed");
+    
+    // Verify the oracle was set correctly
+    const newOracle = await roflSwapOracle.oracle();
+    console.log(`New Oracle Address: ${newOracle}`);
+    
+    if (newOracle === teeAddress) {
+      console.log("✅ Oracle address successfully set to TEE environment address");
+    } else {
+      console.error("❌ Oracle address not set correctly");
+      process.exit(1);
+    }
+  } catch (error) {
+    console.error("Error setting oracle address:", error.message);
+    console.error("\nThis error might occur if:");
+    console.error("1. The script is not running inside the ROFL app environment");
+    console.error("2. The ROFL app ID in the contract doesn't match the current app");
+    console.error("3. The contract doesn't have the setOracle function");
+    process.exit(1);
+  }
 }
 
 main()

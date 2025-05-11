@@ -1,0 +1,15 @@
+# Web3 and Ethereum dependencies
+eth-account>=0.8.0
+eth-abi>=4.2.0
+oasis-sapphire-py
+
+# HTTP and networking
+httpx>=0.25.0
+requests>=2.31.0
+
+# Utility libraries
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+
+# Logging and monitoring
+structlog>=23.2.0

@@ -1,4 +1,4 @@
-// Script to place buy orders on ROFLSwapV5
+// Script to place buy orders on ROFLSwapOracle
 const hre = require("hardhat");
 const fs = require("fs");
 const ethers = hre.ethers;
@@ -36,45 +36,20 @@ function encodeOrder(order) {
 }
 
 async function main() {
-  colorLog("\n=== PLACING BUY ORDER ON ROFLSWAPV5 ===\n", COLORS.BLUE);
+  colorLog("\n=== PLACING BUY ORDER ON ROFLSWAPORACLE ===\n", COLORS.BLUE);
   
   try {
     // Get the network and check if we're on a testnet (default to sapphire-testnet if not specified)
     const network = hre.network.name === 'hardhat' ? 'sapphire-testnet' : hre.network.name;
     colorLog(`Using network: ${network}`, COLORS.BLUE);
     
-    // Try to load deployment information
-    let roflSwapAddress, waterTokenAddress, fireTokenAddress;
-    
-    try {
-      const roflSwapDeployment = JSON.parse(
-        fs.readFileSync(`./roflswap-v5-deployment-${network}.json`, "utf8")
-      );
-      const tokenDeployment = JSON.parse(
-        fs.readFileSync(`./private-tokens-deployment-${network}.json`, "utf8")
-      );
-      
-      roflSwapAddress = roflSwapDeployment.roflSwapV5;
-      waterTokenAddress = tokenDeployment.privateWaterToken;
-      fireTokenAddress = tokenDeployment.privateFireToken;
-      
-    } catch (error) {
-      // Fallback to hardcoded values if files don't exist
-      colorLog(`Deployment files not found. Using hardcoded addresses for ${network}.`, COLORS.YELLOW);
-      
-      if (network === 'sapphire-testnet') {
-        roflSwapAddress = "0x5374c5161a408C77A1Fcd934B55adae7e1bd42AB";
-        waterTokenAddress = "0x991a85943D05Abcc4599Fc8746188CCcE4019F04";
-        fireTokenAddress = "0x8AE7cCe3D249F31b2D2db54aD2eBf1Ba2E30a977";
-      } else {
-        colorLog(`No known addresses for network: ${network}`, COLORS.RED);
-        colorLog(`Please specify a network using --network sapphire-testnet`, COLORS.RED);
-        process.exit(1);
-      }
-    }
+    // Use hardcoded addresses for consistency with the deployed matcher
+    const roflSwapAddress = "0x1bc94B51C5040E7A64FE5F42F51C328d7398969e";
+    const waterTokenAddress = "0x991a85943D05Abcc4599Fc8746188CCcE4019F04";
+    const fireTokenAddress = "0x8AE7cCe3D249F31b2D2db54aD2eBf1Ba2E30a977";
     
     // In a buy order, we want to buy WATER tokens using FIRE tokens
-    colorLog(`ROFLSwapV5: ${roflSwapAddress}`, COLORS.CYAN);
+    colorLog(`ROFLSwapOracle: ${roflSwapAddress}`, COLORS.CYAN);
     colorLog(`Water Token (to buy): ${waterTokenAddress}`, COLORS.CYAN);
     colorLog(`Fire Token (to pay with): ${fireTokenAddress}`, COLORS.CYAN);
     
@@ -83,11 +58,11 @@ async function main() {
     const signerAddress = await signer.getAddress();
     colorLog(`Using address: ${signerAddress}`, COLORS.BLUE);
     
-    // Load ROFLSwapV5 contract
-    const roflSwap = await ethers.getContractAt("ROFLSwapV5", roflSwapAddress);
+    // Load ROFLSwapOracle contract
+    const roflSwap = await ethers.getContractAt("ROFLSwapOracle", roflSwapAddress);
     
     // Load FIRE token contract (token we're paying with)
-    const fireToken = await ethers.getContractAt("PrivateERC20", fireTokenAddress);
+    const fireToken = await ethers.getContractAt("contracts/PrivateERC20.sol:PrivateERC20", fireTokenAddress);
     
     // Check FIRE token balance (this might fail due to privacy features)
     try {
@@ -121,25 +96,31 @@ async function main() {
     const encodedOrder = encodeOrder(order);
     colorLog(`Encoded order (${encodedOrder.length} bytes)`, COLORS.YELLOW);
     
-    // Check and set approval if needed - for buying we need to approve FIRE tokens
-    const fireAllowance = await fireToken.allowance(signerAddress, roflSwapAddress);
-    colorLog(`Current allowance: ${ethers.formatEther(fireAllowance)} FIRE tokens`, COLORS.CYAN);
-    
-    // Total cost = price * size
-    const totalCost = ethers.parseEther("10"); // 10 tokens at 1 FIRE each = 10 FIRE
-    
-    // Approve tokens if needed - use a simple comparison
-    if (Number(ethers.formatEther(fireAllowance)) < Number(ethers.formatEther(totalCost))) {
-      colorLog("Approving FIRE tokens for trading...", COLORS.YELLOW);
+    // With PrivateERC20 tokens, we can't check allowances due to privacy features
+    // Just approve tokens directly
+    colorLog("Approving FIRE tokens for trading...", COLORS.YELLOW);
+    try {
       const approveTx = await fireToken.approve(roflSwapAddress, ethers.MaxUint256);
       await approveTx.wait();
       colorLog(`✅ Tokens approved in transaction: ${approveTx.hash}`, COLORS.GREEN);
-    } else {
-      colorLog("✅ Token approval is sufficient", COLORS.GREEN);
+    } catch (error) {
+      colorLog(`Note: Could not approve tokens: ${error.message}`, COLORS.YELLOW);
+      colorLog("Continuing anyway as approval might already be set.", COLORS.YELLOW);
+    }
+    
+    // Request privacy access for the contract to handle private token transfers
+    try {
+      colorLog("Requesting privacy access for ROFLSwapOracle contract...", COLORS.YELLOW);
+      const privacyTx = await roflSwap.requestPrivacyAccess();
+      await privacyTx.wait();
+      colorLog(`✅ Privacy access granted in transaction: ${privacyTx.hash}`, COLORS.GREEN);
+    } catch (error) {
+      // If it fails, the contract might already have privacy access
+      colorLog("Note: Could not request privacy access. Contract might already have it.", COLORS.YELLOW);
     }
     
     // Place the buy order
-    colorLog("\nPlacing buy order on ROFLSwapV5...", COLORS.YELLOW);
+    colorLog("\nPlacing buy order on ROFLSwapOracle...", COLORS.YELLOW);
     const tx = await roflSwap.placeOrder(encodedOrder);
     colorLog(`Transaction sent: ${tx.hash}`, COLORS.YELLOW);
     
@@ -149,17 +130,32 @@ async function main() {
     // Extract order ID from the event
     const orderPlacedEvent = receipt.logs
       .map(log => { try { return roflSwap.interface.parseLog(log); } catch (e) { return null; }})
-      .find(parsedLog => parsedLog && parsedLog.name === 'OrderPlaced');
+      .filter(Boolean)
+      .find(parsedLog => parsedLog.name === 'OrderPlaced');
       
     if (orderPlacedEvent) {
       const orderId = orderPlacedEvent.args[0];
       colorLog(`✅ Buy order placed successfully with ID: ${orderId}`, COLORS.GREEN);
+      
+      // Wait a bit for the oracle to process the order
+      colorLog("\nWaiting for the oracle to process the order...", COLORS.YELLOW);
+      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+      
+      // Check if the order has been matched
+      try {
+        const isFilled = await roflSwap.filledOrders(orderId);
+        if (isFilled) {
+          colorLog(`✅ Order #${orderId} has been matched by the oracle!`, COLORS.GREEN);
+        } else {
+          colorLog(`Order #${orderId} has not been matched yet.`, COLORS.YELLOW);
+          colorLog("The oracle should match it when a compatible sell order is available.", COLORS.YELLOW);
+        }
+      } catch (error) {
+        colorLog(`Could not check if order is filled: ${error.message}`, COLORS.YELLOW);
+      }
     } else {
       colorLog("✅ Buy order placed successfully, but could not extract order ID.", COLORS.GREEN);
     }
-    
-    colorLog("\nTo check if the order has been matched:", COLORS.YELLOW);
-    colorLog("Run: bun hardhat run scripts/check-order-status.js --network sapphire-testnet", COLORS.CYAN);
     
   } catch (error) {
     colorLog(`❌ Error: ${error.message}`, COLORS.RED);
@@ -174,4 +170,4 @@ main()
   .catch(error => {
     console.error(error);
     process.exit(1);
-  }); 
+  });

@@ -1,112 +1,98 @@
 #!/usr/bin/env python3
 """
-Script to fix TEE oracle permissions for ROFLSwapOracle
-This must be run inside a ROFL session with access to the MATCHER_PRIVATE_KEY
+Fix script for updating TEE Oracle Address in ROFLSwapOracle contract
+
+This script is designed to update the oracle address in the ROFLSwapOracle contract 
+from inside the TEE environment. It can only be run inside the ROFL app container
+where the socket is available.
 """
 
 import os
 import sys
-import logging
 import json
-from web3 import Web3
-from eth_account import Account
+import argparse
+import logging
 from rofl_app.rofl_auth import RoflUtility
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger("fix_tee_oracle")
+logger = logging.getLogger('fix_tee_oracle')
 
 def main():
-    """Main function to get oracle address and fix permissions"""
-    print("=== FIXING TEE ORACLE PERMISSIONS ===")
+    """
+    Main function for fixing the TEE oracle address in the ROFLSwapOracle contract
     
-    # Check if we're running in a TEE environment
-    socket_path = "/run/rofl-appd.sock"
-    if not os.path.exists(socket_path):
-        print(f"ERROR: Socket file not found at {socket_path}")
-        print("This script must be run inside a ROFL session.")
+    1. Gets the current oracle address from the contract
+    2. Sets a new oracle address if needed
+    """
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description='Fix TEE Oracle Address for ROFLSwapOracle contract')
+    parser.add_argument('--contract', '-c', help='ROFLSwapOracle contract address', 
+                       default=os.environ.get('ROFLSWAP_ADDRESS'))
+    parser.add_argument('--oracle', '-o', help='New oracle address to set',
+                       default=os.environ.get('NEW_ORACLE_ADDRESS'))
+    
+    args = parser.parse_args()
+    
+    # Validate contract address
+    if not args.contract:
+        logger.error('No contract address provided. Use --contract or set ROFLSWAP_ADDRESS environment variable.')
         return 1
     
-    # Get the MATCHER_PRIVATE_KEY from environment
-    private_key = os.environ.get('MATCHER_PRIVATE_KEY')
-    if not private_key:
-        print("ERROR: No MATCHER_PRIVATE_KEY found in environment")
-        return 1
-    
-    # Create account from private key
+    # Create ROFL utility instance for TEE mode
+    logger.info(f'Initializing ROFL utility for contract: {args.contract}')
     try:
-        account = Account.from_key(private_key)
-        oracle_address = account.address
-        print(f"Oracle address inside TEE: {oracle_address}")
+        rofl_util = RoflUtility(contract_address=args.contract)
     except Exception as e:
-        print(f"Error creating account from private key: {e}")
+        logger.error(f'Error initializing ROFL utility: {e}')
         return 1
     
-    # Get ROFL app ID
-    rofl_app_id = os.environ.get('ROFL_APP_ID')
-    if not rofl_app_id:
-        print("WARNING: No ROFL_APP_ID found in environment")
-    else:
-        print(f"ROFL App ID: {rofl_app_id}")
-    
-    # Get contract address
-    contract_address = os.environ.get('ROFLSWAP_ADDRESS')
-    if not contract_address:
-        print("ERROR: No ROFLSWAP_ADDRESS found in environment")
-        return 1
-    
-    print(f"Contract address: {contract_address}")
-    
-    # Initialize RoflUtility for signing transactions
+    # Get current oracle address
+    logger.info('Getting current oracle address from contract...')
+    oracle_function_data = '0x7dc0d1d0'  # Function selector for oracle()
     try:
-        rofl_utility = RoflUtility(contract_address, is_tee=True)
-        
-        # Now check if our oracle address matches the one in the contract
-        web3 = Web3(Web3.HTTPProvider(os.environ.get("WEB3_PROVIDER", "https://testnet.sapphire.oasis.io")))
-        
-        # Load contract ABI (minimal ABI with just the functions we need)
-        abi = [
-            {"inputs": [], "name": "oracle", "outputs": [{"internalType": "address", "name": "", "type": "address"}], "stateMutability": "view", "type": "function"},
-            {"inputs": [{"internalType": "address", "name": "addr", "type": "address"}], "name": "setOracle", "outputs": [], "stateMutability": "nonpayable", "type": "function"}
-        ]
-        
-        # Create contract instance
-        contract = web3.eth.contract(address=Web3.to_checksum_address(contract_address), abi=abi)
-        
-        # Get current oracle address from contract
-        try:
-            current_oracle = contract.functions.oracle().call()
-            print(f"Current oracle address in contract: {current_oracle}")
-            
-            if current_oracle.lower() == oracle_address.lower():
-                print("✅ Oracle address already matches the TEE account!")
-            else:
-                print("❌ Oracle address does not match the TEE account.")
-                print("Attempting to set oracle address...")
-                
-                # Set oracle address
-                function_data = contract.encodeABI(fn_name="setOracle", args=[oracle_address])
-                
-                print("Submitting transaction to set oracle address...")
-                result = rofl_utility.submit_transaction(contract_address, function_data)
-                
-                if result and result.get('status') == 'ok':
-                    print(f"✅ Transaction submitted! TX hash: {result.get('txhash', 'unknown')}")
-                    print("The oracle address should now be updated.")
-                else:
-                    print(f"❌ Failed to submit transaction: {result}")
-        except Exception as e:
-            print(f"Error checking oracle address: {e}")
+        result = rofl_util.call_view_function(args.contract, oracle_function_data)
+        if 'data' in result:
+            # Parse oracle address from response
+            oracle_address = '0x' + result['data'][2+24*2:2+64*2][-40:]  # Extract address from padded hex
+            logger.info(f'Current oracle address: {oracle_address}')
+        else:
+            logger.error(f'Error getting oracle address: {result}')
             return 1
-        
     except Exception as e:
-        print(f"Error initializing RoflUtility: {e}")
+        logger.error(f'Error calling contract: {e}')
         return 1
+    
+    # Set new oracle address if needed
+    if args.oracle:
+        new_oracle = args.oracle
+        logger.info(f'Setting new oracle address: {new_oracle}')
+        
+        # Create function call data for setOracle(address)
+        set_oracle_data = '0x7ae6cca4'  # Function selector for setOracle(address)
+        padding = '0' * 24  # Padding for address to 32 bytes
+        new_oracle_hex = new_oracle[2:].lower()  # Remove 0x and ensure lowercase
+        function_data = set_oracle_data + padding + new_oracle_hex
+        
+        try:
+            # Send transaction to set oracle
+            tx_result = rofl_util.submit_transaction(args.contract, function_data)
+            logger.info(f'Transaction result: {tx_result}')
+            if 'status' in tx_result and tx_result['status'] == 'ok':
+                logger.info('✅ Successfully updated oracle address!')
+            else:
+                logger.error(f'❌ Failed to update oracle address: {tx_result}')
+                return 1
+        except Exception as e:
+            logger.error(f'Error submitting transaction: {e}')
+            return 1
+    else:
+        logger.info('No new oracle address provided, skipping update.')
     
     return 0
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     sys.exit(main()) 
